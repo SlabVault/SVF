@@ -1,12 +1,12 @@
 [
   {
     "id": "example-1",
-    "name": "Pikachu (placeholder)",
-    "grade": "PSA 9",
-    "estimatedValueUsd": null,
+    "name": "Snorlax #181 2023",
+    "grade": "CGC Pristine 10",
+    "estimatedValueUsd": 57,
     "acquiredAt": "2026-05-01",
-    "imageUrl": "",
-    "vaultedUrl": "",
+    "imageUrl": "https://d1xpxki1g4htqu.cloudfront.net/OlT8A277gVNHlloAcchywXi5Uq3xdaTrFCm9XIOFRqM",
+    "vaultedUrl": "https://vollector.id/c/5be074a0-c8bd-4a31-954a-9b523949e654",
     "collectrUrl": ""
   }
 ]

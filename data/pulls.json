@@ -1,11 +1,11 @@
 [
   {
     "id": "example-1",
-    "date": "2026-05-10",
+    "date": "2026-05-2",
     "source": "Collector Crypt",
-    "summary": "Replace with your first real pull — edit data/pulls.json.",
-    "costUsd": null,
-    "outcomeUsd": null,
-    "clipUrl": ""
+    "summary": "Snorlax #181 CGC 10 Pristine 2023 ",
+    "costUsd": 50,
+    "outcomeUsd": 57,
+    "clipUrl": "https://gacha.collectorcrypt.com/?replay=cc-2daf7f1c-8553-437f-a57d-de42baf15abd"
   }
 ]

@@ -19,11 +19,10 @@ Marketing site for [SlabVaultFi](https://github.com/SlabVault/SVF): home, vault 
 
 ## Open Graph and Twitter images
 
-- [`public/og.png`](public/og.png) — static 1200×630 fallback referenced in root metadata (`/og.png`) for link unfurlers and non-Next consumers.
-- [`app/opengraph-image.tsx`](app/opengraph-image.tsx) — dynamic Open Graph image (same dimensions) via Next.js file convention.
-- [`app/twitter-image.tsx`](app/twitter-image.tsx) — dynamic Twitter large card image.
+- [`app/opengraph-image.tsx`](app/opengraph-image.tsx) — dynamic Open Graph image (1200×630) via the Next.js App Router file convention (`/opengraph-image`).
+- [`app/twitter-image.tsx`](app/twitter-image.tsx) — dynamic Twitter large card (`/twitter-image`).
 
-Root `metadata` includes the static image; Next still serves dynamic routes at `/opengraph-image` and `/twitter-image` when platforms request them.
+Root `metadata` sets titles, descriptions, and your X handle; Next wires the dynamic image routes automatically. If you want an extra **static** 1200×630 file for non-Next tools, add `public/og.png` yourself and extend `metadata.openGraph.images` / `metadata.twitter.images` in [`app/layout.tsx`](app/layout.tsx).
 
 ## Scripts
 
