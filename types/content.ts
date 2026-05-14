@@ -4,6 +4,7 @@ export type SiteLinks = {
   birdeye: string;
   twitter: string;
   telegram: string;
+  discord: string;
   linktree: string;
   gitbook: string;
   vaulted: string;

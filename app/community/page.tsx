@@ -28,6 +28,9 @@ export default function CommunityPage() {
           <LinkButton href={site.links.telegram} external variant="secondary">
             Join Telegram
           </LinkButton>
+          <LinkButton href={site.links.discord} external variant="secondary">
+            Join Discord
+          </LinkButton>
           <LinkButton href={site.links.linktree} external variant="secondary">
             Linktree
           </LinkButton>
@@ -36,17 +39,9 @@ export default function CommunityPage() {
           </LinkButton>
         </div>
         <p className="max-w-prose text-sm leading-relaxed text-muted">
-          <span className="font-medium text-foreground">Discord:</span> invites
-          rotate; use the official{" "}
-          <a
-            href={site.links.linktree}
-            className={externalLinkClass}
-            target="_blank"
-            rel="noreferrer"
-          >
-            Linktree
-          </a>{" "}
-          for the current server link (never trust random DMs).
+          <span className="font-medium text-foreground">Discord invites rotate.</span>{" "}
+          Use the official Linktree (or the Join Discord button above) for the
+          current server link, and never trust random DMs.
         </p>
       </header>
 

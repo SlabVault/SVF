@@ -77,6 +77,9 @@ export function SiteFooter({ site }: Props) {
           <Link className={footerMutedLinkClass} href={links.telegram} target="_blank" rel="noreferrer">
             Telegram
           </Link>
+          <Link className={footerMutedLinkClass} href={links.discord} target="_blank" rel="noreferrer">
+            Discord
+          </Link>
           <Link className={footerMutedLinkClass} href={links.linktree} target="_blank" rel="noreferrer">
             Linktree
           </Link>
