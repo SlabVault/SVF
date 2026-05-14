@@ -1,0 +1,71 @@
+{
+  "brandName": "SlabVaultFi",
+  "ticker": "$SVF",
+  "tagline": "Community-owned treasury built through live gacha pulls and graded Pokémon slabs.",
+  "description": "Creator fees from $SVF fund gacha pulls; graded slabs land in a transparent multisig vault—giving holders exposure to real-world collectibles with on-chain transparency.",
+  "contractAddress": "6ZxRa2CWtAcWKb58RMJABuiUYWu9o4oM76QCyMVLpump",
+  "vaultAddresses": {
+    "snsTreasury": "treasury.slabvault.sol",
+    "snsDeployer": "slabvault.sol"
+  },
+  "manualVaultValueUsd": null,
+  "treasurySquadsUrl": "https://app.squads.so/squads/2oRZe7z9Jx3rpoUWuidjGhpX9mxxhtps2JqQtdxLfHwg/treasury",
+  "links": {
+    "pump": "https://pump.fun/coin/6ZxRa2CWtAcWKb58RMJABuiUYWu9o4oM76QCyMVLpump",
+    "dexscreener": "https://dexscreener.com/solana/h3hywgadsxtdsohe2mwt3dw25wz5u3axh7t9eazycbwr",
+    "birdeye": "https://birdeye.so/solana/token/6ZxRa2CWtAcWKb58RMJABuiUYWu9o4oM76QCyMVLpump?tab=trades",
+    "twitter": "https://x.com/SlabVaultFi",
+    "telegram": "https://t.me/SlabVault",
+    "linktree": "https://linktr.ee/slabvaultfi",
+    "gitbook": "https://slabvault.gitbook.io/slabvault-docs",
+    "vaulted": "https://vaulted.id/u/SlabVaultFi",
+    "collectr": "https://app.getcollectr.com/showcase/profile/5741da44-bcb8-44cc-be7a-e33a2251d7fc",
+    "collectorCryptTreasury": "https://collectorcrypt.com/account/2oRZe7z9Jx3rpoUWuidjGhpX9mxxhtps2JqQtdxLfHwg",
+    "gachaCollectorCrypt": "https://gacha.collectorcrypt.com/r/x843qqp9u5vf",
+    "gachaPhygitals": "https://phygitals.com/invite/slabvault",
+    "gachaBeezie": "https://beezie.com/r/O9067G6O",
+    "poolSvfCards": "https://www.meteora.ag/dammv2/4Axs5SuGTpWQhYqxqXnED1UwDq2iZ17Ub4iuF4gxC7K2?referrer=home",
+    "poolSvfPigeon": "https://www.meteora.ag/dammv2/2w7cHedL4PZc6146FuaEeZKwcgPBi4AozW7NyfEoYg8W?referrer=home"
+  },
+  "stream": {
+    "live": false,
+    "embedUrl": "",
+    "watchUrl": "https://x.com/SlabVaultFi"
+  },
+  "latestPull": {
+    "title": "Example on-stream pull",
+    "date": "2026-05-10",
+    "source": "Collector Crypt",
+    "detail": "Replace this row by editing data/site.json.",
+    "clipUrl": ""
+  },
+  "latestSlab": {
+    "name": "Example slab",
+    "grade": "PSA 10",
+    "imageUrl": "",
+    "note": "Add imageUrl in site.json when you have a hosted asset."
+  },
+  "roadmap": [
+    {
+      "phase": "Now",
+      "items": [
+        "Public vault dashboard and pull transparency",
+        "Live streams + community updates on X / Telegram"
+      ]
+    },
+    {
+      "phase": "Next",
+      "items": [
+        "Deeper pull history + clip embeds",
+        "Community voting on packs and risk levels"
+      ]
+    },
+    {
+      "phase": "Later",
+      "items": [
+        "Vault marketplace / redemption mechanics (when ready)",
+        "Milestones, raffles, and holder experiences tied to vault growth"
+      ]
+    }
+  ]
+}

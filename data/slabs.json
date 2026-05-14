@@ -1,0 +1,12 @@
+[
+  {
+    "id": "example-1",
+    "name": "Pikachu (placeholder)",
+    "grade": "PSA 9",
+    "estimatedValueUsd": null,
+    "acquiredAt": "2026-05-01",
+    "imageUrl": "",
+    "vaultedUrl": "",
+    "collectrUrl": ""
+  }
+]

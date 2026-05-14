@@ -1,0 +1,83 @@
+export type SiteLinks = {
+  pump: string;
+  dexscreener: string;
+  birdeye: string;
+  twitter: string;
+  telegram: string;
+  linktree: string;
+  gitbook: string;
+  vaulted: string;
+  collectr: string;
+  collectorCryptTreasury: string;
+  gachaCollectorCrypt: string;
+  gachaPhygitals: string;
+  gachaBeezie: string;
+  poolSvfCards: string;
+  poolSvfPigeon: string;
+};
+
+export type SiteStream = {
+  live: boolean;
+  embedUrl: string;
+  watchUrl: string;
+};
+
+export type LatestPull = {
+  title: string;
+  date: string;
+  source: string;
+  detail: string;
+  clipUrl: string;
+};
+
+export type LatestSlab = {
+  name: string;
+  grade: string;
+  imageUrl: string;
+  note: string;
+};
+
+export type RoadmapPhase = {
+  phase: string;
+  items: string[];
+};
+
+export type SiteConfig = {
+  brandName: string;
+  ticker: string;
+  tagline: string;
+  description: string;
+  contractAddress: string;
+  vaultAddresses: {
+    snsTreasury: string;
+    snsDeployer: string;
+  };
+  manualVaultValueUsd: number | null;
+  treasurySquadsUrl: string;
+  links: SiteLinks;
+  stream: SiteStream;
+  latestPull: LatestPull;
+  latestSlab: LatestSlab;
+  roadmap: RoadmapPhase[];
+};
+
+export type SlabItem = {
+  id: string;
+  name: string;
+  grade: string;
+  estimatedValueUsd: number | null;
+  acquiredAt: string;
+  imageUrl: string;
+  vaultedUrl: string;
+  collectrUrl: string;
+};
+
+export type PullItem = {
+  id: string;
+  date: string;
+  source: string;
+  summary: string;
+  costUsd: number | null;
+  outcomeUsd: number | null;
+  clipUrl: string;
+};
