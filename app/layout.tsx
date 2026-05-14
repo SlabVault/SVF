@@ -34,6 +34,14 @@ export const metadata: Metadata = {
     description:
       "Live gacha pulls, graded Pokémon slabs, and a transparent multisig vault.",
     url: "/",
+    images: [
+      {
+        url: "/og.png",
+        width: 1200,
+        height: 630,
+        alt: "SlabVaultFi",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
@@ -42,6 +50,7 @@ export const metadata: Metadata = {
     title: "SlabVaultFi — Community-owned collectible vault",
     description:
       "Live gacha pulls, graded Pokémon slabs, and a transparent multisig vault.",
+    images: ["/og.png"],
   },
   icons: {
     icon: "/favicon.ico",
