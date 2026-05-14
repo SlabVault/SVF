@@ -1,8 +1,12 @@
 import type { Metadata } from "next";
+
 import { LinkButton } from "@/components/link-button";
 import { QuickLinks } from "@/components/quick-links";
 import { StatStrip } from "@/components/stat-strip";
 import { StreamEmbed } from "@/components/stream-embed";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { getDexTokenStats } from "@/lib/dexscreener";
 import { getSiteConfig } from "@/lib/site-config";
 
@@ -11,13 +15,16 @@ export default async function Home() {
   const stats = await getDexTokenStats(site.contractAddress);
 
   return (
-    <div className="mx-auto max-w-6xl space-y-16 px-4 py-14">
+    <div className="mx-auto max-w-6xl space-y-14 px-4 py-14 sm:space-y-16 sm:px-5 sm:py-16">
       <section className="grid gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
-        <div className="space-y-6">
-          <p className="inline-flex items-center gap-2 rounded-full border border-line bg-vault-panel px-3 py-1 text-xs font-semibold text-muted">
-            <span className="h-1.5 w-1.5 rounded-full bg-vault-mint" />
+        <div className="space-y-6 sm:space-y-7">
+          <Badge
+            variant="secondary"
+            className="inline-flex max-w-full items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold"
+          >
+            <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-vault-mint" />
             Transparent multisig vault · Solana
-          </p>
+          </Badge>
           <h1 className="font-display text-4xl font-semibold leading-tight tracking-tight text-foreground sm:text-5xl">
             The collectible vault,{" "}
             <span className="text-vault-amber">owned by the community.</span>
@@ -44,55 +51,52 @@ export default async function Home() {
           </div>
         </div>
 
-        <div className="grid gap-4">
-          <div className="rounded-2xl border border-line bg-vault-panel/60 p-5">
+        <div className="grid gap-4 sm:gap-5">
+          <Card className="space-y-3 p-5 sm:p-6">
             <p className="text-xs font-semibold uppercase tracking-wide text-muted">
               Latest pull
             </p>
-            <p className="mt-2 font-display text-xl font-semibold text-foreground">
+            <p className="font-display text-xl font-semibold text-foreground">
               {site.latestPull.title}
             </p>
-            <p className="mt-1 text-sm text-muted">
+            <p className="text-sm text-muted">
               {site.latestPull.date} · {site.latestPull.source}
             </p>
-            <p className="mt-3 text-sm leading-relaxed text-muted">
+            <p className="text-sm leading-relaxed text-muted">
               {site.latestPull.detail}
             </p>
             {site.latestPull.clipUrl ? (
-              <a
-                href={site.latestPull.clipUrl}
-                className="mt-4 inline-flex text-sm font-semibold text-vault-amber underline-offset-4 hover:underline"
-                target="_blank"
-                rel="noreferrer"
-              >
-                Watch clip
-              </a>
+              <Button asChild variant="link" size="sm" className="h-auto min-h-0 justify-start p-0">
+                <a href={site.latestPull.clipUrl} target="_blank" rel="noreferrer">
+                  Watch clip
+                </a>
+              </Button>
             ) : null}
-          </div>
+          </Card>
 
-          <div className="rounded-2xl border border-line bg-vault-panel/60 p-5">
+          <Card className="space-y-3 p-5 sm:p-6">
             <p className="text-xs font-semibold uppercase tracking-wide text-muted">
               Latest slab
             </p>
             {site.latestSlab.imageUrl?.trim() ? (
-              <div className="mt-3 overflow-hidden rounded-xl border border-line">
+              <div className="overflow-hidden rounded-xl border border-line">
                 {/* eslint-disable-next-line @next/next/no-img-element -- remote URL from site.json */}
                 <img
                   src={site.latestSlab.imageUrl.trim()}
-                  alt=""
+                  alt={`${site.latestSlab.name} ${site.latestSlab.grade}`}
                   className="aspect-[4/3] w-full object-cover"
                   loading="lazy"
                 />
               </div>
             ) : null}
-            <p className="mt-2 font-display text-xl font-semibold text-foreground">
+            <p className="font-display text-xl font-semibold text-foreground">
               {site.latestSlab.name}{" "}
               <span className="text-vault-amber">· {site.latestSlab.grade}</span>
             </p>
-            <p className="mt-3 text-sm leading-relaxed text-muted">
+            <p className="text-sm leading-relaxed text-muted">
               {site.latestSlab.note}
             </p>
-          </div>
+          </Card>
         </div>
       </section>
 
@@ -111,7 +115,7 @@ export default async function Home() {
         watchUrl={site.stream.watchUrl}
       />
 
-      <section className="rounded-2xl border border-line bg-gradient-to-br from-vault-panel/80 to-vault-deep/60 p-6 sm:p-8">
+      <Card className="border-line bg-gradient-to-br from-vault-panel/80 to-vault-deep/60 p-6 sm:p-8">
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
             <h2 className="font-display text-2xl font-semibold">Proof of reserves</h2>
@@ -136,7 +140,7 @@ export default async function Home() {
             </LinkButton>
           </div>
         </div>
-      </section>
+      </Card>
     </div>
   );
 }

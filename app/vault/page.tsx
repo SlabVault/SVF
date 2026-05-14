@@ -9,7 +9,7 @@ export default function VaultPage() {
   const slabs = getSlabs();
 
   return (
-    <div className="mx-auto max-w-6xl space-y-10 px-4 py-14">
+    <div className="mx-auto max-w-6xl space-y-10 px-4 py-14 sm:space-y-12 sm:px-5 sm:py-16">
       <header className="space-y-4">
         <h1 className="font-display text-4xl font-semibold tracking-tight">
           Vault

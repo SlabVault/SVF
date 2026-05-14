@@ -1,5 +1,7 @@
 import Link from "next/link";
 import type { PullItem } from "@/types/content";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { formatUsd } from "@/lib/format";
 
 type Props = {
@@ -11,7 +13,10 @@ export function PullRow({ pull }: Props) {
   const out = pull.outcomeUsd != null ? formatUsd(pull.outcomeUsd) : "—";
 
   return (
-    <article className="grid gap-4 rounded-2xl border border-line bg-vault-panel/50 p-4 md:grid-cols-[140px_1fr_auto] md:items-center">
+    <Card
+      variant="row"
+      className="grid gap-4 p-4 transition-[border-color,box-shadow] hover:border-vault-violet/25 hover:shadow-[0_0_24px_-14px_rgba(139,92,246,0.4)] md:grid-cols-[140px_1fr_auto] md:items-center md:p-5"
+    >
       <div>
         <p className="text-xs font-medium uppercase tracking-wide text-muted">
           Date
@@ -30,18 +35,15 @@ export function PullRow({ pull }: Props) {
       </div>
       <div className="md:text-right">
         {pull.clipUrl ? (
-          <Link
-            href={pull.clipUrl}
-            className="inline-flex text-sm font-semibold text-vault-amber underline-offset-4 hover:underline"
-            target="_blank"
-            rel="noreferrer"
-          >
-            Clip
-          </Link>
+          <Button asChild variant="link" className="h-auto min-h-0 p-0">
+            <Link href={pull.clipUrl} target="_blank" rel="noreferrer">
+              Clip
+            </Link>
+          </Button>
         ) : (
           <span className="text-xs text-muted">No clip linked</span>
         )}
       </div>
-    </article>
+    </Card>
   );
 }

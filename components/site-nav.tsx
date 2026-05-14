@@ -4,6 +4,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useId, useState } from "react";
 
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+
 type NavItem = { href: string; label: string };
 
 type Props = {
@@ -30,15 +33,18 @@ export function SiteNav({ brandName, ticker, items }: Props) {
     <>
       <nav
         aria-label="Primary"
-        className="hidden items-center gap-x-5 text-sm md:flex"
+        className="hidden items-center gap-x-1 text-sm md:flex"
       >
         {items.map((item) => (
           <Link
             key={item.href}
             href={item.href}
-            className={`transition-colors hover:text-foreground ${
-              pathname === item.href ? "text-foreground" : "text-muted"
-            }`}
+            className={cn(
+              "rounded-md px-2.5 py-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-vault-amber/70 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+              pathname === item.href
+                ? "text-foreground"
+                : "text-muted hover:text-foreground",
+            )}
           >
             {item.label}
           </Link>
@@ -46,15 +52,17 @@ export function SiteNav({ brandName, ticker, items }: Props) {
       </nav>
 
       <div className="flex items-center md:hidden">
-        <button
+        <Button
           type="button"
-          className="inline-flex items-center justify-center rounded-lg border border-line bg-vault-panel px-3 py-2 text-sm font-semibold text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-vault-amber"
+          variant="outline"
+          size="default"
+          className="min-h-11 min-w-[5.5rem] rounded-lg"
           aria-expanded={open}
           aria-controls={panelId}
           onClick={() => setOpen((v) => !v)}
         >
           {open ? "Close" : "Menu"}
-        </button>
+        </Button>
       </div>
 
       {open ? (
@@ -82,11 +90,12 @@ export function SiteNav({ brandName, ticker, items }: Props) {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`rounded-lg px-3 py-3 text-sm font-semibold transition-colors hover:bg-vault-panel ${
+                  className={cn(
+                    "rounded-lg px-3 py-3.5 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-vault-amber/70 focus-visible:ring-offset-2 focus-visible:ring-offset-vault-deep",
                     pathname === item.href
                       ? "bg-vault-panel text-foreground"
-                      : "text-muted"
-                  }`}
+                      : "text-muted hover:bg-vault-panel hover:text-foreground",
+                  )}
                   onClick={() => setOpen(false)}
                 >
                   {item.label}

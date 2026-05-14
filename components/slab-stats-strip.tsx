@@ -1,4 +1,5 @@
 import type { SlabItem } from "@/types/content";
+import { Card } from "@/components/ui/card";
 import { formatUsd } from "@/lib/format";
 
 type Props = {
@@ -23,25 +24,25 @@ export function SlabStatsStrip({ slabs }: Props) {
 
   return (
     <div className="grid gap-3 sm:grid-cols-3">
-      <div className="rounded-xl border border-line bg-vault-panel/60 p-4">
+      <Card variant="stat" className="p-4 transition-[border-color] hover:border-vault-violet/30">
         <p className="text-xs font-medium uppercase tracking-wide text-muted">
           Slabs listed
         </p>
         <p className="mt-2 font-mono text-2xl font-semibold">{slabs.length}</p>
-      </div>
-      <div className="rounded-xl border border-line bg-vault-panel/60 p-4">
+      </Card>
+      <Card variant="stat" className="p-4 transition-[border-color] hover:border-vault-violet/30">
         <p className="text-xs font-medium uppercase tracking-wide text-muted">
           With images
         </p>
         <p className="mt-2 font-mono text-2xl font-semibold">{withImage}</p>
-      </div>
-      <div className="rounded-xl border border-line bg-vault-panel/60 p-4">
+      </Card>
+      <Card variant="stat" className="p-4 transition-[border-color] hover:border-vault-violet/30">
         <p className="text-xs font-medium uppercase tracking-wide text-muted">
           Est. value tracked (USD)
         </p>
         <p className="mt-2 font-mono text-2xl font-semibold">{totalValue}</p>
         <p className="mt-1 text-xs text-muted">{valueNote}</p>
-      </div>
+      </Card>
     </div>
   );
 }

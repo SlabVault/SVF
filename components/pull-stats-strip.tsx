@@ -1,4 +1,5 @@
 import type { PullStats } from "@/lib/pull-stats";
+import { Card } from "@/components/ui/card";
 import { formatUsd } from "@/lib/format";
 
 type Props = {
@@ -17,32 +18,32 @@ export function PullStatsStrip({ stats }: Props) {
 
   return (
     <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-      <div className="rounded-xl border border-line bg-vault-panel/60 p-4">
+      <Card variant="stat" className="p-4 transition-[border-color] hover:border-vault-violet/30">
         <p className="text-xs font-medium uppercase tracking-wide text-muted">
           Pulls logged
         </p>
         <p className="mt-2 font-mono text-2xl font-semibold">{stats.count}</p>
-      </div>
-      <div className="rounded-xl border border-line bg-vault-panel/60 p-4">
+      </Card>
+      <Card variant="stat" className="p-4 transition-[border-color] hover:border-vault-violet/30">
         <p className="text-xs font-medium uppercase tracking-wide text-muted">
           Clips linked
         </p>
         <p className="mt-2 font-mono text-2xl font-semibold">{stats.withClip}</p>
-      </div>
-      <div className="rounded-xl border border-line bg-vault-panel/60 p-4">
+      </Card>
+      <Card variant="stat" className="p-4 transition-[border-color] hover:border-vault-violet/30">
         <p className="text-xs font-medium uppercase tracking-wide text-muted">
           Tracked spend (USD)
         </p>
         <p className="mt-2 font-mono text-2xl font-semibold">{cost}</p>
         <p className="mt-1 text-xs text-muted">{costCoverage}</p>
-      </div>
-      <div className="rounded-xl border border-line bg-vault-panel/60 p-4">
+      </Card>
+      <Card variant="stat" className="p-4 transition-[border-color] hover:border-vault-violet/30">
         <p className="text-xs font-medium uppercase tracking-wide text-muted">
           Tracked outcomes (USD)
         </p>
         <p className="mt-2 font-mono text-2xl font-semibold">{outcome}</p>
         <p className="mt-1 text-xs text-muted">{outcomeCoverage}</p>
-      </div>
+      </Card>
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { DexTokenStats } from "@/lib/dexscreener";
+import { Card } from "@/components/ui/card";
 import { formatUsd } from "@/lib/format";
 
 type Props = {
@@ -17,12 +18,12 @@ function Stat({
   value: string;
 }) {
   return (
-    <div className="rounded-xl border border-line bg-vault-panel/70 p-4">
+    <Card variant="stat" className="p-4 transition-[border-color] hover:border-vault-violet/30">
       <p className="text-xs font-medium uppercase tracking-wide text-muted">
         {label}
       </p>
       <p className="mt-2 font-mono text-lg font-semibold text-foreground">{value}</p>
-    </div>
+    </Card>
   );
 }
 
@@ -40,8 +41,11 @@ export function StatStrip({
     manualVaultValueUsd != null ? formatUsd(manualVaultValueUsd) : null;
   const pairHref = stats?.pairUrl ?? dexscreenerUrl;
 
+  const outboundClass =
+    "rounded-sm text-sm font-semibold text-vault-amber underline-offset-4 transition-colors hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-vault-amber/70 focus-visible:ring-offset-2 focus-visible:ring-offset-background";
+
   return (
-    <section className="space-y-3" aria-label="Market snapshot">
+    <section className="space-y-4" aria-label="Market snapshot">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h2 className="font-display text-lg font-semibold text-foreground">
@@ -52,21 +56,11 @@ export function StatStrip({
             Dexscreener or Birdeye before trading.
           </p>
         </div>
-        <div className="flex flex-wrap items-center gap-4 text-sm font-semibold">
-          <Link
-            href={pairHref}
-            className="text-vault-amber underline-offset-4 hover:underline"
-            target="_blank"
-            rel="noreferrer"
-          >
+        <div className="flex flex-wrap items-center gap-4">
+          <Link href={pairHref} className={outboundClass} target="_blank" rel="noreferrer">
             Dexscreener
           </Link>
-          <Link
-            href={birdeyeUrl}
-            className="text-vault-amber underline-offset-4 hover:underline"
-            target="_blank"
-            rel="noreferrer"
-          >
+          <Link href={birdeyeUrl} className={outboundClass} target="_blank" rel="noreferrer">
             Birdeye
           </Link>
         </div>
