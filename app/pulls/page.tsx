@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
 import { PullRow } from "@/components/pull-row";
+import { PullStatsStrip } from "@/components/pull-stats-strip";
+import { summarizePulls } from "@/lib/pull-stats";
 import { getPulls } from "@/lib/site-config";
 
 export default function PullsPage() {
   const pulls = getPulls();
   const sorted = [...pulls].sort((a, b) => (a.date < b.date ? 1 : -1));
+  const stats = summarizePulls(sorted);
 
   return (
     <div className="mx-auto max-w-6xl space-y-10 px-4 py-14">
@@ -18,6 +21,8 @@ export default function PullsPage() {
           with cost, outcome, partner, and clip links.
         </p>
       </header>
+
+      <PullStatsStrip stats={stats} />
 
       <div className="space-y-3">
         {sorted.map((pull) => (

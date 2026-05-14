@@ -49,6 +49,9 @@ export function SiteFooter({ site }: Props) {
         </div>
 
         <div className="flex flex-wrap gap-x-5 gap-y-2 text-sm text-muted">
+          <Link className="hover:text-foreground" href={links.pump} target="_blank" rel="noreferrer">
+            Pump.fun
+          </Link>
           <Link className="hover:text-foreground" href={links.gitbook} target="_blank" rel="noreferrer">
             GitBook
           </Link>
@@ -63,6 +66,9 @@ export function SiteFooter({ site }: Props) {
           </Link>
           <Link className="hover:text-foreground" href={links.telegram} target="_blank" rel="noreferrer">
             Telegram
+          </Link>
+          <Link className="hover:text-foreground" href={links.linktree} target="_blank" rel="noreferrer">
+            Linktree
           </Link>
         </div>
 

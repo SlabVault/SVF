@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { LinkButton } from "@/components/link-button";
 import { SlabCard } from "@/components/slab-card";
+import { SlabStatsStrip } from "@/components/slab-stats-strip";
 import { getSiteConfig, getSlabs } from "@/lib/site-config";
 
 export default function VaultPage() {
@@ -30,6 +31,8 @@ export default function VaultPage() {
           </LinkButton>
         </div>
       </header>
+
+      <SlabStatsStrip slabs={slabs} />
 
       <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {slabs.map((slab) => (

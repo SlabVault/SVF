@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { LinkButton } from "@/components/link-button";
+import { QuickLinks } from "@/components/quick-links";
 import { StatStrip } from "@/components/stat-strip";
 import { StreamEmbed } from "@/components/stream-embed";
 import { getDexTokenStats } from "@/lib/dexscreener";
@@ -27,6 +28,12 @@ export default async function Home() {
           <div className="flex flex-wrap gap-3">
             <LinkButton href={site.links.pump} external>
               Buy on Pump.fun
+            </LinkButton>
+            <LinkButton href={site.links.gitbook} external variant="secondary">
+              Read GitBook
+            </LinkButton>
+            <LinkButton href={site.links.twitter} external variant="secondary">
+              Follow on X
             </LinkButton>
             <LinkButton href={site.treasurySquadsUrl} external variant="secondary">
               View Squads treasury
@@ -67,6 +74,17 @@ export default async function Home() {
             <p className="text-xs font-semibold uppercase tracking-wide text-muted">
               Latest slab
             </p>
+            {site.latestSlab.imageUrl?.trim() ? (
+              <div className="mt-3 overflow-hidden rounded-xl border border-line">
+                {/* eslint-disable-next-line @next/next/no-img-element -- remote URL from site.json */}
+                <img
+                  src={site.latestSlab.imageUrl.trim()}
+                  alt=""
+                  className="aspect-[4/3] w-full object-cover"
+                  loading="lazy"
+                />
+              </div>
+            ) : null}
             <p className="mt-2 font-display text-xl font-semibold text-foreground">
               {site.latestSlab.name}{" "}
               <span className="text-vault-amber">· {site.latestSlab.grade}</span>
@@ -78,9 +96,12 @@ export default async function Home() {
         </div>
       </section>
 
+      <QuickLinks links={site.links} />
+
       <StatStrip
         stats={stats}
         dexscreenerUrl={site.links.dexscreener}
+        birdeyeUrl={site.links.birdeye}
         manualVaultValueUsd={site.manualVaultValueUsd}
       />
 
