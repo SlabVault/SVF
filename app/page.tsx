@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 
 import { GachaTiers } from "@/components/gacha-tiers";
-import { GrailWall } from "@/components/grail-wall";
 import { HeroSection } from "@/components/hero-section";
 import { HowItWorks } from "@/components/how-it-works";
 import { LinkButton } from "@/components/link-button";
@@ -15,7 +14,7 @@ import { VaultStatsStrip } from "@/components/vault-stats-strip";
 import { WalletBalances } from "@/components/wallet-balances";
 import { Card } from "@/components/ui/card";
 import { getDexTokenStats } from "@/lib/dexscreener";
-import { getGrailItems, summarizeVault } from "@/lib/vault-stats";
+import { summarizeVault } from "@/lib/vault-stats";
 import { getPulls, getSiteConfig, getSlabs } from "@/lib/site-config";
 
 export default async function Home() {
@@ -26,7 +25,6 @@ export default async function Home() {
   const featuredSlabs = slabs.slice(0, Math.min(4, slabs.length));
   const recentPulls = pulls.slice(0, 8);
   const vaultSummary = summarizeVault(slabs, site.manualVaultValueUsd);
-  const grailItems = getGrailItems(pulls, slabs, 8);
 
   return (
     <>
@@ -40,8 +38,6 @@ export default async function Home() {
         <GachaTiers site={site} />
 
         <VaultStatsStrip summary={vaultSummary} />
-
-        <GrailWall items={grailItems} />
 
         <section className="space-y-6 motion-safe:animate-fade-in-up">
           <div className="flex items-center justify-between gap-3">
