@@ -74,13 +74,13 @@ export default async function Home() {
             <div>
               <h2 className="font-heading text-2xl font-bold">Proof of reserves</h2>
               <p className="mt-2 max-w-prose text-sm text-muted">
-                Track the physical collection on Vaulted and Collectr, and follow
-                on-chain treasury movements via Squads.
+                Track the physical collection on Vollector and Collectr, both
+                Collector Crypt treasury accounts, and on-chain Squads movements.
               </p>
             </div>
             <div className="flex flex-wrap gap-3">
-              <LinkButton href={site.links.vaulted} external variant="secondary">
-                Vaulted profile
+              <LinkButton href={site.links.vollector} external variant="secondary">
+                Vollector profile
               </LinkButton>
               <LinkButton href={site.links.collectr} external variant="secondary">
                 Collectr showcase
@@ -90,7 +90,17 @@ export default async function Home() {
                 external
                 variant="secondary"
               >
-                Collector Crypt
+                CC treasury
+              </LinkButton>
+              <LinkButton
+                href={site.links.collectorCryptDeployer}
+                external
+                variant="secondary"
+              >
+                CC deployer
+              </LinkButton>
+              <LinkButton href={site.treasurySquadsUrl} external variant="secondary">
+                Squads treasury
               </LinkButton>
             </div>
           </div>

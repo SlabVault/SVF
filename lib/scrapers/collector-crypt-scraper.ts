@@ -1,6 +1,14 @@
 import axios from "axios";
 import * as cheerio from "cheerio";
 
+import {
+  fetchHtml,
+  parseFlightStringField,
+  SCRAPER_TIMEOUT_MS,
+  SCRAPER_USER_AGENT,
+} from "./scraper-utils";
+import { scrapeVollectorProfile, type VollectorSlab } from "./vollector-scraper";
+
 export type CollectorCryptPull = {
   id: string;
   date: string;
@@ -12,132 +20,171 @@ export type CollectorCryptPull = {
 };
 
 /**
- * Scrape pull history from Collector Crypt account
+ * Collector Crypt account pages are client-rendered SPAs. Attempt Vollector-style
+ * payload parsing when present; otherwise return null so fallbacks can run.
+ */
+export async function scrapeCollectorCryptSlabs(
+  accountUrl: string,
+): Promise<VollectorSlab[] | null> {
+  const html = await fetchHtml(accountUrl);
+  if (!html) return null;
+
+  const embedded = await scrapeVollectorProfile(accountUrl, html);
+  if (embedded?.length) {
+    return embedded.map((slab) => ({
+      ...slab,
+      profileUrl: accountUrl,
+    }));
+  }
+
+  return null;
+}
+
+/**
+ * Scrape pull history from Collector Crypt account (SPA — usually empty).
  */
 export async function scrapeCollectorCryptPulls(
-  accountUrl: string
+  accountUrl: string,
 ): Promise<CollectorCryptPull[] | null> {
-  try {
-    const response = await axios.get(accountUrl, {
-      headers: {
-        "User-Agent":
-          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-      },
-      timeout: 10000,
+  const html = await fetchHtml(accountUrl);
+  if (!html) return null;
+
+  const $ = cheerio.load(html);
+  const pulls: CollectorCryptPull[] = [];
+
+  $(".pull-item, .transaction-item, .history-item").each((index, element) => {
+    const $el = $(element);
+
+    const date = $el.find(".date, .timestamp, .time").first().text().trim();
+    const source = $el.find(".source, .partner, .platform").first().text().trim();
+    const summary = $el.find(".summary, .description, .details").first().text().trim();
+    const clipUrl =
+      $el.find('a[href*="clip"], a[href*="video"], a[href*="watch"], a[href*="replay"]')
+        .first()
+        .attr("href") || "";
+
+    const costText = $el.find(".cost, .spent, .price").first().text().trim();
+    const costUsd = costText ? parseFloat(costText.replace(/[^0-9.]/g, "")) : null;
+
+    const outcomeText = $el.find(".outcome, .value, .won").first().text().trim();
+    const outcomeUsd = outcomeText
+      ? parseFloat(outcomeText.replace(/[^0-9.]/g, ""))
+      : null;
+
+    if (date || summary) {
+      pulls.push({
+        id: `pull-${index}`,
+        date: date || new Date().toISOString().split("T")[0],
+        source: source || "Collector Crypt",
+        summary: summary || "Pull from gacha",
+        costUsd,
+        outcomeUsd,
+        clipUrl,
+      });
+    }
+  });
+
+  const replayPattern =
+    /https:\/\/gacha\.collectorcrypt\.com\/\?replay=[a-zA-Z0-9-]+/g;
+  const replays = [...html.matchAll(replayPattern)];
+  replays.forEach((match, index) => {
+    pulls.push({
+      id: `replay-${index}`,
+      date: new Date().toISOString().split("T")[0],
+      source: "Collector Crypt",
+      summary: parseFlightStringField(html, "name") ?? "Gacha replay",
+      costUsd: null,
+      outcomeUsd: null,
+      clipUrl: match[0],
     });
+  });
 
-    const $ = cheerio.load(response.data);
-    const pulls: CollectorCryptPull[] = [];
-
-    // Note: The actual HTML structure will need to be inspected and adjusted
-    // This is a template based on typical gacha site patterns
-    
-    // Look for pull history or transaction items
-    $(".pull-item, .transaction-item, .history-item").each((index, element) => {
-      const $el = $(element);
-      
-      const date = $el.find(".date, .timestamp, .time").first().text().trim();
-      const source = $el.find(".source, .partner, .platform").first().text().trim();
-      const summary = $el.find(".summary, .description, .details").first().text().trim();
-      const clipUrl = $el.find('a[href*="clip"], a[href*="video"], a[href*="watch"]').first().attr("href") || "";
-      
-      // Try to extract cost
-      const costText = $el.find(".cost, .spent, .price").first().text().trim();
-      const costUsd = costText ? parseFloat(costText.replace(/[^0-9.]/g, "")) : null;
-      
-      // Try to extract outcome/value
-      const outcomeText = $el.find(".outcome, .value, .won").first().text().trim();
-      const outcomeUsd = outcomeText ? parseFloat(outcomeText.replace(/[^0-9.]/g, "")) : null;
-
-      if (date || summary) {
-        pulls.push({
-          id: `pull-${index}`,
-          date: date || new Date().toISOString().split("T")[0],
-          source: source || "Collector Crypt",
-          summary: summary || "Pull from gacha",
-          costUsd,
-          outcomeUsd,
-          clipUrl,
-        });
-      }
-    });
-
-    return pulls;
-  } catch (error: unknown) {
-    console.error("Error scraping Collector Crypt pulls:", error);
-    return null;
-  }
+  return pulls.length > 0 ? pulls : null;
 }
 
 /**
- * Alternative: Try to fetch data from Collector Crypt API if available
+ * Try Collector Crypt API endpoints, then fall back to HTML scraping.
  */
 export async function fetchCollectorCryptData(
-  accountUrl: string
+  accountUrl: string,
 ): Promise<CollectorCryptPull[] | null> {
-  try {
-    // Extract account ID from URL
-    const match = accountUrl.match(/account\/([a-zA-Z0-9]+)/);
-    if (!match) {
-      throw new Error("Invalid Collector Crypt account URL");
+  const match = accountUrl.match(/account\/([a-zA-Z0-9]+)/);
+  if (!match) return scrapeCollectorCryptPulls(accountUrl);
+
+  const accountId = match[1];
+  const apiCandidates = [
+    `https://api.collectorcrypt.com/accounts/${accountId}/pulls`,
+    `https://api.collectorcrypt.com/v1/accounts/${accountId}/pulls`,
+  ];
+
+  for (const apiUrl of apiCandidates) {
+    try {
+      const response = await axios.get(apiUrl, {
+        headers: { "User-Agent": SCRAPER_USER_AGENT },
+        timeout: SCRAPER_TIMEOUT_MS,
+      });
+
+      const data = response.data as Array<{
+        id?: string;
+        date?: string;
+        timestamp?: string;
+        source?: string;
+        partner?: string;
+        summary?: string;
+        description?: string;
+        cost?: number;
+        spent?: number;
+        outcome?: number;
+        value?: number;
+        clip_url?: string;
+        video_url?: string;
+      }>;
+
+      if (Array.isArray(data) && data.length > 0) {
+        return data.map((item, index) => ({
+          id: item.id || `pull-${index}`,
+          date: item.date || item.timestamp || new Date().toISOString().split("T")[0],
+          source: item.source || item.partner || "Collector Crypt",
+          summary: item.summary || item.description || "Pull from gacha",
+          costUsd: item.cost ?? item.spent ?? null,
+          outcomeUsd: item.outcome ?? item.value ?? null,
+          clipUrl: item.clip_url || item.video_url || "",
+        }));
+      }
+    } catch {
+      // try next candidate
     }
-
-    const accountId = match[1];
-    
-    // Try API endpoint (this is hypothetical - would need actual API docs)
-    const apiUrl = `https://api.collectorcrypt.com/accounts/${accountId}/pulls`;
-    
-    const response = await axios.get(apiUrl, {
-      headers: {
-        "User-Agent":
-          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-      },
-      timeout: 10000,
-    });
-
-    // Map API response to our format
-    return response.data.map((item: { id?: string; date?: string; timestamp?: string; source?: string; partner?: string; summary?: string; description?: string; cost?: number; spent?: number; cost_usd?: number | null; outcome?: number; value?: number; outcome_usd?: number | null; clip_url?: string; video_url?: string }, index: number) => ({
-      id: item.id || `pull-${index}`,
-      date: item.date || item.timestamp,
-      source: item.source || item.partner || "Collector Crypt",
-      summary: item.summary || item.description,
-      costUsd: item.cost || item.spent,
-      outcomeUsd: item.outcome || item.value,
-      clipUrl: item.clip_url || item.video_url || "",
-    }));
-  } catch (error) {
-    console.error("Error fetching Collector Crypt API data:", error);
-    // Fallback to scraping
-    return scrapeCollectorCryptPulls(accountUrl);
   }
+
+  return scrapeCollectorCryptPulls(accountUrl);
+}
+
+export async function fetchCollectorCryptSlabs(
+  accountUrls: string[],
+): Promise<VollectorSlab[] | null> {
+  const merged = new Map<string, VollectorSlab>();
+
+  for (const url of accountUrls) {
+    const slabs = await scrapeCollectorCryptSlabs(url);
+    if (!slabs) continue;
+    for (const slab of slabs) {
+      merged.set(`${slab.imageUrl}-${slab.id}`, slab);
+    }
+  }
+
+  const result = [...merged.values()];
+  return result.length > 0 ? result : null;
 }
 
 /**
- * Get wallet address from Collector Crypt account
+ * Get wallet address from Collector Crypt account page.
  */
 export async function getCollectorCryptWallet(
-  accountUrl: string
+  accountUrl: string,
 ): Promise<string | null> {
-  try {
-    const response = await axios.get(accountUrl, {
-      headers: {
-        "User-Agent":
-          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-      },
-      timeout: 10000,
-    });
+  const html = await fetchHtml(accountUrl);
+  if (!html) return null;
 
-    const $ = cheerio.load(response.data);
-    
-    // Look for wallet address in the page
-    const walletText = $(".wallet-address, .address, [data-wallet]").first().text().trim();
-    
-    // Try to extract Solana address pattern (base58, 32-44 chars)
-    const walletMatch = walletText.match(/[1-9A-HJ-NP-Za-km-z]{32,44}/);
-    
-    return walletMatch ? walletMatch[0] : null;
-  } catch (error) {
-    console.error("Error getting Collector Crypt wallet:", error);
-    return null;
-  }
+  const walletMatch = html.match(/[1-9A-HJ-NP-Za-km-z]{32,44}/);
+  return walletMatch?.[0] ?? null;
 }

@@ -6,6 +6,9 @@ import { Breadcrumbs } from "@/components/breadcrumbs";
 import { formatUsd } from "@/lib/format";
 import { listMarketplaceSlabs } from "@/lib/marketplace-slabs";
 
+/** Always read DB/JSON at request time — avoids stale empty listings from static build. */
+export const dynamic = "force-dynamic";
+
 export default async function MarketplacePage() {
   const { slabs, fromFallback } = await listMarketplaceSlabs({
     status: "AVAILABLE",
@@ -39,14 +42,23 @@ export default async function MarketplacePage() {
       </div>
 
       {slabs.length === 0 ? (
-        <Card className="p-12 text-center">
+        <Card className="space-y-4 p-12 text-center">
           <p className="text-lg text-muted">
             No slabs available for purchase at this time.
           </p>
-          <p className="mt-2 text-sm text-muted">
-            Add listings in the admin dashboard or populate{" "}
-            <code>data/slabs.json</code>.
+          <p className="text-sm text-muted">
+            Add listings in the admin dashboard, run{" "}
+            <code className="text-foreground">npm run db:seed</code>, or populate{" "}
+            <code className="text-foreground">data/slabs.json</code>.
           </p>
+          <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+            <Button asChild>
+              <a href="/admin/slabs/new">Add slab in admin</a>
+            </Button>
+            <Button variant="outline" asChild>
+              <a href="/admin/login">Admin login</a>
+            </Button>
+          </div>
         </Card>
       ) : (
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">

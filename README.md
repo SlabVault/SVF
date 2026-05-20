@@ -17,15 +17,27 @@ Marketing site for [SlabVaultFi](https://github.com/SlabVault/SVF): home, vault 
 | `NEXT_PUBLIC_SITE_URL` | **Recommended in production** | Canonical site origin for Open Graph, `sitemap.xml`, and `robots.txt` (e.g. `https://www.slabvaultfi.com`). Defaults to `http://localhost:3000`. |
 | `NEXT_PUBLIC_TOKEN_CA` | Optional | Overrides the Solana mint in `data/site.json` for Dexscreener stats. |
 | `SOLANA_RPC_URL` | Optional | Solana RPC provider URL for wallet queries and data sync. Defaults to public mainnet-beta RPC. Recommended: Helius, QuickNode, or similar for production. |
-| `DATABASE_URL` | **Required for marketplace** | PostgreSQL connection string for marketplace database. Use Supabase, Railway, or similar. |
+| `DATABASE_URL` | Optional for v1 | PostgreSQL for live marketplace checkout. **Omit** to serve demo listings from `data/slabs.json`. |
+| `ADMIN_PASSWORD` | Optional | Admin dashboard login (with `NEXTAUTH_SECRET` / `NEXTAUTH_URL`). |
+| `NEXTAUTH_SECRET` | Optional | Session signing for admin. |
+| `NEXTAUTH_URL` | Optional | Same origin as the site (e.g. `http://localhost:3000`). |
+
+Copy [`.env.example`](.env.example) to `.env.local` and adjust. Marketplace without a working DB still shows slabs from `data/slabs.json`.
+
+Root `metadataBase` uses `NEXT_PUBLIC_SITE_URL` (see `app/layout.tsx`). Set it in production so OG URLs, `sitemap.xml`, and canonical links resolve to your live domain.
+
+## Marketplace database
+
+```bash
+npm run db:push   # apply Prisma schema
+npm run db:seed   # seed slabs from data/slabs.json
+```
 
 ## Open Graph and Twitter images
 
-- [`public/og.png`](public/og.png) — static 1200×630 brand backdrop used in root `metadata` (`openGraph.images` / `twitter.images`) for reliable unfurls.
-- [`app/opengraph-image.tsx`](app/opengraph-image.tsx) — optional dynamic Open Graph route (`/opengraph-image`) with richer typography.
-- [`app/twitter-image.tsx`](app/twitter-image.tsx) — optional dynamic Twitter route (`/twitter-image`).
-
-Replace `public/og.png` with your own artwork anytime (keep 1200×630 for best card compatibility).
+- [`app/opengraph-image.tsx`](app/opengraph-image.tsx) — primary 1200×630 OG/Twitter image (`/opengraph-image`), wired in root metadata.
+- [`public/og.png`](public/og.png) — optional static fallback; replace with full 1200×630 artwork if you prefer a file-based card.
+- [`app/twitter-image.tsx`](app/twitter-image.tsx) — dynamic Twitter route (`/twitter-image`).
 
 ## Scripts
 
@@ -33,7 +45,9 @@ Replace `public/og.png` with your own artwork anytime (keep 1200×630 for best c
 npm install
 npm run dev
 npm run lint
-npm run build
+npm run build   # uses webpack on Windows for reliable production builds
+npm run db:push
+npm run db:seed
 ```
 
 Local preview: [http://localhost:3000](http://localhost:3000).

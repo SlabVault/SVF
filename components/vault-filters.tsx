@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import type { SlabItem } from "@/types/content";
 
@@ -14,23 +14,21 @@ export function VaultFilters({ slabs, onFilteredSlabsChange }: Props) {
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [searchQuery, setSearchQuery] = useState("");
 
-  const filterAndSortSlabs = () => {
+  const filteredSlabs = useMemo(() => {
     let filtered = [...slabs];
-    
-    // Filter by search query
+
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter(
         (slab) =>
           slab.name.toLowerCase().includes(query) ||
-          slab.grade.toLowerCase().includes(query)
+          slab.grade.toLowerCase().includes(query),
       );
     }
-    
-    // Sort
+
     filtered.sort((a, b) => {
       let comparison = 0;
-      
+
       if (sortBy === "date") {
         comparison = a.acquiredAt.localeCompare(b.acquiredAt);
       } else if (sortBy === "value") {
@@ -40,12 +38,12 @@ export function VaultFilters({ slabs, onFilteredSlabsChange }: Props) {
       } else if (sortBy === "name") {
         comparison = a.name.localeCompare(b.name);
       }
-      
+
       return sortOrder === "asc" ? comparison : -comparison;
     });
-    
+
     return filtered;
-  };
+  }, [slabs, sortBy, sortOrder, searchQuery]);
 
   const handleSortChange = (newSortBy: "date" | "value" | "name") => {
     if (sortBy === newSortBy) {
@@ -57,9 +55,8 @@ export function VaultFilters({ slabs, onFilteredSlabsChange }: Props) {
   };
 
   useEffect(() => {
-    const filteredSlabs = filterAndSortSlabs();
     onFilteredSlabsChange(filteredSlabs);
-  }, [slabs, sortBy, sortOrder, searchQuery, onFilteredSlabsChange]);
+  }, [filteredSlabs, onFilteredSlabsChange]);
 
   return (
     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">

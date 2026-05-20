@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import type { PullItem } from "@/types/content";
 
@@ -14,23 +14,21 @@ export function PullsFilters({ pulls, onFilteredPullsChange }: Props) {
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [searchQuery, setSearchQuery] = useState("");
 
-  const filterAndSortPulls = () => {
+  const filteredPulls = useMemo(() => {
     let filtered = [...pulls];
-    
-    // Filter by search query
+
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter(
         (pull) =>
           pull.summary.toLowerCase().includes(query) ||
-          pull.source.toLowerCase().includes(query)
+          pull.source.toLowerCase().includes(query),
       );
     }
-    
-    // Sort
+
     filtered.sort((a, b) => {
       let comparison = 0;
-      
+
       if (sortBy === "date") {
         comparison = a.date.localeCompare(b.date);
       } else if (sortBy === "cost") {
@@ -42,12 +40,12 @@ export function PullsFilters({ pulls, onFilteredPullsChange }: Props) {
         const bRoi = b.outcomeUsd && b.costUsd ? b.outcomeUsd - b.costUsd : 0;
         comparison = aRoi - bRoi;
       }
-      
+
       return sortOrder === "asc" ? comparison : -comparison;
     });
-    
+
     return filtered;
-  };
+  }, [pulls, sortBy, sortOrder, searchQuery]);
 
   const handleSortChange = (newSortBy: "date" | "cost" | "roi") => {
     if (sortBy === newSortBy) {
@@ -59,9 +57,8 @@ export function PullsFilters({ pulls, onFilteredPullsChange }: Props) {
   };
 
   useEffect(() => {
-    const filteredPulls = filterAndSortPulls();
     onFilteredPullsChange(filteredPulls);
-  }, [pulls, sortBy, sortOrder, searchQuery, onFilteredPullsChange]);
+  }, [filteredPulls, onFilteredPullsChange]);
 
   return (
     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">

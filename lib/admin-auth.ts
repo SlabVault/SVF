@@ -6,7 +6,7 @@ export function requireAuth(request: Request): NextResponse | null {
   if (!adminPassword) {
     return NextResponse.json(
       { error: "ADMIN_PASSWORD not configured" },
-      { status: 500 },
+      { status: 503 },
     );
   }
   if (header !== `Bearer ${adminPassword}`) {

@@ -45,7 +45,7 @@ export function SiteNav({
     <>
       <nav
         aria-label="Primary navigation"
-        className="hidden min-w-0 flex-1 items-center justify-end gap-x-0.5 overflow-x-auto md:flex [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        className="hidden min-w-0 flex-1 items-center justify-end gap-x-0.5 overflow-x-auto sm:flex [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       >
         {items.map((item) => (
           <Link
@@ -59,7 +59,7 @@ export function SiteNav({
         ))}
       </nav>
 
-      <div className="flex items-center md:hidden">
+      <div className="flex items-center sm:hidden">
         <Button
           type="button"
           variant="outline"
@@ -76,7 +76,7 @@ export function SiteNav({
 
       {open ? (
         <div
-          className="fixed inset-0 z-[60] md:hidden"
+          className="fixed inset-0 z-[60] sm:hidden"
           role="dialog"
           aria-modal="true"
         >

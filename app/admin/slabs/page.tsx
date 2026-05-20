@@ -2,22 +2,12 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Breadcrumbs } from "@/components/breadcrumbs";
+import { getAdminSlabs } from "@/lib/admin-server";
 
-async function getSlabs() {
-  try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/api/admin/slabs`, {
-      cache: "no-store",
-    });
-    if (!response.ok) return [];
-    return response.json();
-  } catch (error) {
-    console.error("Error fetching slabs:", error);
-    return [];
-  }
-}
+export const dynamic = "force-dynamic";
 
 export default async function AdminSlabsPage() {
-  const slabs = await getSlabs();
+  const slabs = await getAdminSlabs();
 
   return (
     <div className="mx-auto max-w-6xl space-y-8 px-4 py-12 sm:px-5 sm:py-16">
@@ -61,11 +51,12 @@ export default async function AdminSlabsPage() {
               {slabs.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="px-6 py-12 text-center text-muted">
-                    No slabs found. Add your first slab to get started.
+                    No slabs in the database. Run{" "}
+                    <code>npm run db:seed</code> or add your first slab.
                   </td>
                 </tr>
               ) : (
-                slabs.map((slab: { id: string; name: string; grade: string; status: string; solPrice: number; svfPrice: number; estimatedValueUsd: number | null; acquiredAt: string | Date }) => (
+                slabs.map((slab) => (
                   <tr key={slab.id} className="border-b border-line hover:bg-vault-panel/30 transition-colors">
                     <td className="px-6 py-4">
                       <div className="font-medium">{slab.name}</div>
@@ -94,9 +85,6 @@ export default async function AdminSlabsPage() {
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex gap-2">
-                        <Button variant="outline" size="sm" asChild>
-                          <a href={`/admin/slabs/${slab.id}/edit`}>Edit</a>
-                        </Button>
                         <Button variant="outline" size="sm" asChild>
                           <a href={`/marketplace/${slab.id}`} target="_blank" rel="noreferrer">
                             View

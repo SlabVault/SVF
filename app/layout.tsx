@@ -40,7 +40,7 @@ export const metadata: Metadata = {
     url: "/",
     images: [
       {
-        url: "/og.png",
+        url: "/opengraph-image",
         width: 1200,
         height: 630,
         alt: "SlabVaultFi",
@@ -54,7 +54,7 @@ export const metadata: Metadata = {
     title: "SlabVaultFi — Community-owned collectible vault",
     description:
       "Live gacha pulls, graded Pokémon slabs, and a transparent multisig vault.",
-    images: ["/og.png"],
+    images: ["/opengraph-image"],
   },
   icons: {
     icon: "/favicon.ico",

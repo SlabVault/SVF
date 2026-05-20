@@ -1,34 +1,27 @@
+import Link from "next/link";
+
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Breadcrumbs } from "@/components/breadcrumbs";
+import {
+  getAdminSlabs,
+  getAdminTransactions,
+  isAdminApiConfigured,
+} from "@/lib/admin-server";
 
-async function getAdminData() {
-  try {
-    const [slabsResponse, transactionsResponse] = await Promise.all([
-      fetch(`${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/api/admin/slabs`, {
-        cache: "no-store",
-      }),
-      fetch(`${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/api/admin/transactions`, {
-        cache: "no-store",
-      }),
-    ]);
-
-    const slabs = slabsResponse.ok ? await slabsResponse.json() : [];
-    const transactions = transactionsResponse.ok ? await transactionsResponse.json() : [];
-
-    return { slabs, transactions };
-  } catch (error) {
-    console.error("Error fetching admin data:", error);
-    return { slabs: [], transactions: [] };
-  }
-}
+export const dynamic = "force-dynamic";
 
 export default async function AdminPage() {
-  const { slabs, transactions } = await getAdminData();
+  const [slabs, transactions] = await Promise.all([
+    getAdminSlabs(),
+    getAdminTransactions(),
+  ]);
+  const adminConfigured = isAdminApiConfigured();
+  const dbConfigured = Boolean(process.env.DATABASE_URL?.trim());
 
-  const availableSlabs = slabs.filter((s: { status: string }) => s.status === "AVAILABLE").length;
-  const soldSlabs = slabs.filter((s: { status: string }) => s.status === "SOLD").length;
+  const availableSlabs = slabs.filter((s) => s.status === "AVAILABLE").length;
+  const soldSlabs = slabs.filter((s) => s.status === "SOLD").length;
 
   return (
     <div className="mx-auto max-w-6xl space-y-8 px-4 py-12 sm:px-5 sm:py-16">
@@ -46,6 +39,24 @@ export default async function AdminPage() {
         <p className="text-lg text-muted">
           Manage vault listings, pricing, and transactions.
         </p>
+        {!dbConfigured ? (
+          <p className="rounded-lg border border-line bg-vault-panel/60 px-4 py-3 text-sm text-muted">
+            Set <code className="text-foreground">DATABASE_URL</code>, run{" "}
+            <code className="text-foreground">npm run db:push</code> and{" "}
+            <code className="text-foreground">npm run db:seed</code> for live
+            listings. Marketplace still shows demo data from{" "}
+            <code className="text-foreground">data/slabs.json</code> until then.
+          </p>
+        ) : null}
+        {!adminConfigured ? (
+          <p className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-muted">
+            Set <code className="text-foreground">ADMIN_PASSWORD</code> in env
+            to protect write APIs.{" "}
+            <Link href="/admin/login" className="text-vault-amber hover:underline">
+              Admin login
+            </Link>
+          </p>
+        ) : null}
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -64,7 +75,7 @@ export default async function AdminPage() {
         <Card className="space-y-2 p-6 bg-gradient-to-br from-vault-panel/50 to-vault-deep/50">
           <p className="text-sm font-medium text-muted">Total Revenue</p>
           <p className="font-display text-3xl font-semibold text-foreground">
-            ${transactions.reduce((sum: number, t: { totalUsdValue?: number }) => sum + (t.totalUsdValue || 0), 0).toFixed(2)}
+            ${transactions.reduce((sum, t) => sum + (t.totalUsdValue || 0), 0).toFixed(2)}
           </p>
         </Card>
       </div>
@@ -79,7 +90,7 @@ export default async function AdminPage() {
             {transactions.length === 0 ? (
               <p className="text-sm text-muted">No transactions yet</p>
             ) : (
-              transactions.slice(0, 5).map((tx: { id: string; slab?: { name: string; grade?: string }; buyerWallet: string; status: string; createdAt: string | Date; solAmount?: number; svfAmount?: number }) => (
+              transactions.slice(0, 5).map((tx) => (
                 <div
                   key={tx.id}
                   className="flex items-center justify-between rounded-lg border border-line p-3"
@@ -124,7 +135,7 @@ export default async function AdminPage() {
             {slabs.length === 0 ? (
               <p className="text-sm text-muted">No slabs listed</p>
             ) : (
-              slabs.slice(0, 5).map((slab: { id: string; name: string; grade: string; status: string; solPrice: number }) => (
+              slabs.slice(0, 5).map((slab) => (
                 <div
                   key={slab.id}
                   className="flex items-center justify-between rounded-lg border border-line p-3"
@@ -166,10 +177,10 @@ export default async function AdminPage() {
             <a href="/admin/slabs/new">Add New Slab</a>
           </Button>
           <Button variant="outline" className="h-auto py-4" asChild>
-            <a href="/admin/pricing">Update Pricing</a>
+            <a href="/admin/login">Admin Login</a>
           </Button>
           <Button variant="outline" className="h-auto py-4" asChild>
-            <a href="/admin/analytics">View Analytics</a>
+            <a href="/marketplace">View Marketplace</a>
           </Button>
         </div>
       </Card>

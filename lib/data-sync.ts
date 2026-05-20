@@ -1,8 +1,15 @@
 import { getWalletData } from "./solana-wallet";
-import { fetchVaultedData, scrapeVaultedProfile } from "./scrapers/vaulted-scraper";
-import { fetchCollectorCryptData, scrapeCollectorCryptPulls } from "./scrapers/collector-crypt-scraper";
+import {
+  fetchCollectorCryptData,
+  fetchCollectorCryptSlabs,
+} from "./scrapers/collector-crypt-scraper";
+import { scrapeCollectrShowcase } from "./scrapers/collectr-scraper";
+import {
+  fetchVollectorData,
+  type VollectorSlab,
+} from "./scrapers/vollector-scraper";
+import { fetchVaultedData } from "./scrapers/vaulted-scraper";
 import type { SlabItem, PullItem } from "@/types/content";
-import type { VaultedSlab } from "@/lib/scrapers/vaulted-scraper";
 import type { CollectorCryptPull } from "@/lib/scrapers/collector-crypt-scraper";
 import siteJson from "@/data/site.json";
 import slabsJson from "@/data/slabs.json";
@@ -10,9 +17,14 @@ import pullsJson from "@/data/pulls.json";
 import { writeFile } from "fs/promises";
 import { join } from "path";
 
-// Configuration
+const VOLLECTOR_PROFILE_URL = "https://vollector.id/u/SlabVaultFi";
 const VAULTED_PROFILE_URL = "https://vaulted.id/u/SlabVaultFi";
-const COLLECTOR_CRYPT_TREASURY_URL = "https://collectorcrypt.com/account/2oRZe7z9Jx3rpoUWuidjGhpX9mxxhtps2JqQtdxLfHwg";
+const COLLECTR_SHOWCASE_URL =
+  "https://app.getcollectr.com/showcase/profile/5741da44-bcb8-44cc-be7a-e33a2251d7fc";
+const COLLECTOR_CRYPT_TREASURY_URL =
+  "https://collectorcrypt.com/account/2oRZe7z9Jx3rpoUWuidjGhpX9mxxhtps2JqQtdxLfHwg";
+const COLLECTOR_CRYPT_DEPLOYER_URL =
+  "https://collectorcrypt.com/account/CWqc6DQhHxdnDSwrjG3LGnyWPQ3dRNfCY5umvTj8NBE3";
 const TREASURY_WALLET = "2oRZe7z9Jx3rpoUWuidjGhpX9mxxhtps2JqQtdxLfHwg";
 const DEPLOYER_WALLET = "CWqc6DQhHxdnDSwrjG3LGnyWPQ3dRNfCY5umvTj8NBE3";
 
@@ -22,11 +34,74 @@ export type SyncResult = {
   slabsUpdated: boolean;
   pullsUpdated: boolean;
   walletDataUpdated: boolean;
+  slabSource: string | null;
   errors: string[];
 };
 
+function toSlabItem(slab: VollectorSlab): SlabItem {
+  return {
+    id: slab.id,
+    name: slab.name,
+    grade: slab.grade,
+    estimatedValueUsd: slab.estimatedValueUsd,
+    acquiredAt: slab.acquiredAt,
+    imageUrl: slab.imageUrl,
+    vaultedUrl: slab.itemUrl,
+    collectrUrl: slab.collectrUrl ?? "",
+  };
+}
+
 /**
- * Main data sync function - fetches data from all sources and updates JSON files
+ * Slab sources in priority order: Collector Crypt → Vollector → Vaulted → Collectr.
+ */
+async function fetchSlabsWithFallback(): Promise<{
+  slabs: SlabItem[];
+  source: string;
+} | null> {
+  console.log("Trying Collector Crypt treasury accounts...");
+  const ccSlabs = await fetchCollectorCryptSlabs([
+    COLLECTOR_CRYPT_TREASURY_URL,
+    COLLECTOR_CRYPT_DEPLOYER_URL,
+  ]);
+  if (ccSlabs?.length) {
+    return { slabs: ccSlabs.map(toSlabItem), source: "collector-crypt" };
+  }
+
+  console.log("Collector Crypt empty, trying Vollector...");
+  const vollectorSlabs = await fetchVollectorData(VOLLECTOR_PROFILE_URL);
+  if (vollectorSlabs?.length) {
+    return { slabs: vollectorSlabs.map(toSlabItem), source: "vollector" };
+  }
+
+  console.log("Vollector empty, trying Vaulted...");
+  const vaultedSlabs = await fetchVaultedData(VAULTED_PROFILE_URL);
+  if (vaultedSlabs?.length) {
+    return {
+      slabs: vaultedSlabs.map((slab) => ({
+        id: slab.id,
+        name: slab.name,
+        grade: slab.grade,
+        estimatedValueUsd: slab.estimatedValueUsd,
+        acquiredAt: slab.acquiredAt,
+        imageUrl: slab.imageUrl,
+        vaultedUrl: slab.vaultedUrl,
+        collectrUrl: slab.collectrUrl ?? "",
+      })),
+      source: "vaulted",
+    };
+  }
+
+  console.log("Vaulted empty, trying Collectr...");
+  const collectrSlabs = await scrapeCollectrShowcase(COLLECTR_SHOWCASE_URL);
+  if (collectrSlabs?.length) {
+    return { slabs: collectrSlabs.map(toSlabItem), source: "collectr" };
+  }
+
+  return null;
+}
+
+/**
+ * Main data sync function - fetches data from all sources and updates JSON files.
  */
 export async function syncAllData(): Promise<SyncResult> {
   const result: SyncResult = {
@@ -35,36 +110,42 @@ export async function syncAllData(): Promise<SyncResult> {
     slabsUpdated: false,
     pullsUpdated: false,
     walletDataUpdated: false,
+    slabSource: null,
     errors: [],
   };
 
   try {
     console.log("Starting data sync at:", result.timestamp);
 
-    // Sync slabs from Vaulted.id
     const slabsResult = await syncSlabs();
-    result.slabsUpdated = slabsResult;
-    if (!slabsResult) {
-      result.errors.push("Failed to sync slabs from Vaulted.id");
+    result.slabsUpdated = slabsResult.updated;
+    result.slabSource = slabsResult.source;
+    if (!slabsResult.updated) {
+      result.errors.push(
+        slabsResult.source
+          ? "Slab sync returned no changes"
+          : "Failed to sync slabs from all sources (keeping existing data)",
+      );
     }
 
-    // Sync pulls from Collector Crypt
     const pullsResult = await syncPulls();
     result.pullsUpdated = pullsResult;
     if (!pullsResult) {
-      result.errors.push("Failed to sync pulls from Collector Crypt");
+      result.errors.push(
+        "Failed to sync pulls from Collector Crypt (keeping existing data)",
+      );
     }
 
-    // Sync wallet data
     const walletResult = await syncWalletData();
     result.walletDataUpdated = walletResult;
     if (!walletResult) {
       result.errors.push("Failed to sync wallet data");
     }
 
-    result.success = result.errors.length === 0;
+    result.success =
+      result.slabsUpdated || result.pullsUpdated || result.walletDataUpdated;
     console.log("Data sync completed:", result);
-    
+
     return result;
   } catch (error) {
     console.error("Error during data sync:", error);
@@ -73,81 +154,41 @@ export async function syncAllData(): Promise<SyncResult> {
   }
 }
 
-/**
- * Sync slab data from Vaulted.id
- */
-async function syncSlabs(): Promise<boolean> {
+async function syncSlabs(): Promise<{ updated: boolean; source: string | null }> {
   try {
-    console.log("Syncing slabs from Vaulted.id...");
-    
-    // Try API first, fallback to scraping
-    let vaultedSlabs: VaultedSlab[] | null = await fetchVaultedData(VAULTED_PROFILE_URL);
-    
-    if (!vaultedSlabs || vaultedSlabs.length === 0) {
-      console.log("API returned no data, trying scraper...");
-      const scrapedSlabs = await scrapeVaultedProfile(VAULTED_PROFILE_URL);
-      if (!scrapedSlabs || scrapedSlabs.length === 0) {
-        console.log("No slab data found from Vaulted.id, keeping existing data");
-        return false;
-      }
-      vaultedSlabs = scrapedSlabs;
+    const fetched = await fetchSlabsWithFallback();
+    if (!fetched?.slabs.length) {
+      console.log("No slab data found from any source, keeping existing data");
+      return { updated: false, source: null };
     }
 
-    if (!vaultedSlabs || vaultedSlabs.length === 0) {
-      console.log("No slab data found, keeping existing data");
-      return false;
-    }
-
-    // Convert to our format
-    const slabs: SlabItem[] = vaultedSlabs.map((slab) => ({
-      id: slab.id,
-      name: slab.name,
-      grade: slab.grade,
-      estimatedValueUsd: slab.estimatedValueUsd,
-      acquiredAt: slab.acquiredAt,
-      imageUrl: slab.imageUrl,
-      vaultedUrl: slab.vaultedUrl,
-      collectrUrl: slab.collectrUrl || "",
-    }));
-
-    // Write to slabs.json
     const slabsPath = join(process.cwd(), "data", "slabs.json");
-    await writeFile(slabsPath, JSON.stringify(slabs, null, 2), "utf-8");
-    
-    console.log(`Updated ${slabs.length} slabs`);
-    return true;
+    await writeFile(slabsPath, JSON.stringify(fetched.slabs, null, 2), "utf-8");
+
+    console.log(`Updated ${fetched.slabs.length} slabs from ${fetched.source}`);
+    return { updated: true, source: fetched.source };
   } catch (error) {
     console.error("Error syncing slabs:", error);
-    return false;
+    return { updated: false, source: null };
   }
 }
 
-/**
- * Sync pull data from Collector Crypt
- */
 async function syncPulls(): Promise<boolean> {
   try {
     console.log("Syncing pulls from Collector Crypt...");
-    
-    // Try API first, fallback to scraping
-    let collectorPulls: CollectorCryptPull[] | null = await fetchCollectorCryptData(COLLECTOR_CRYPT_TREASURY_URL);
-    
-    if (!collectorPulls || collectorPulls.length === 0) {
-      console.log("API returned no data, trying scraper...");
-      const scrapedPulls = await scrapeCollectorCryptPulls(COLLECTOR_CRYPT_TREASURY_URL);
-      if (!scrapedPulls || scrapedPulls.length === 0) {
-        console.log("No pull data found from Collector Crypt, keeping existing data");
-        return false;
-      }
-      collectorPulls = scrapedPulls;
+
+    let collectorPulls: CollectorCryptPull[] | null =
+      await fetchCollectorCryptData(COLLECTOR_CRYPT_TREASURY_URL);
+
+    if (!collectorPulls?.length) {
+      collectorPulls = await fetchCollectorCryptData(COLLECTOR_CRYPT_DEPLOYER_URL);
     }
 
-    if (!collectorPulls || collectorPulls.length === 0) {
-      console.log("No pull data found, keeping existing data");
+    if (!collectorPulls?.length) {
+      console.log("No pull data found from Collector Crypt, keeping existing data");
       return false;
     }
 
-    // Convert to our format
     const pulls: PullItem[] = collectorPulls.map((pull) => ({
       id: pull.id,
       date: pull.date,
@@ -158,10 +199,9 @@ async function syncPulls(): Promise<boolean> {
       clipUrl: pull.clipUrl,
     }));
 
-    // Write to pulls.json
     const pullsPath = join(process.cwd(), "data", "pulls.json");
     await writeFile(pullsPath, JSON.stringify(pulls, null, 2), "utf-8");
-    
+
     console.log(`Updated ${pulls.length} pulls`);
     return true;
   } catch (error) {
@@ -170,30 +210,22 @@ async function syncPulls(): Promise<boolean> {
   }
 }
 
-/**
- * Sync wallet data from Solana
- */
 async function syncWalletData(): Promise<boolean> {
   try {
     console.log("Syncing wallet data from Solana...");
-    
-    // Get treasury wallet data
+
     const treasuryData = await getWalletData(TREASURY_WALLET);
-    
     if (!treasuryData) {
       console.log("Failed to fetch treasury wallet data");
       return false;
     }
 
-    // Get deployer wallet data
     const deployerData = await getWalletData(DEPLOYER_WALLET);
-    
     if (!deployerData) {
       console.log("Failed to fetch deployer wallet data");
       return false;
     }
 
-    // Update site.json with wallet balances
     const updatedSite = {
       ...siteJson,
       treasuryBalanceSol: treasuryData.balanceSol,
@@ -201,11 +233,12 @@ async function syncWalletData(): Promise<boolean> {
       lastWalletSync: new Date().toISOString(),
     };
 
-    // Write to site.json
     const sitePath = join(process.cwd(), "data", "site.json");
     await writeFile(sitePath, JSON.stringify(updatedSite, null, 2), "utf-8");
-    
-    console.log(`Updated wallet balances: Treasury=${treasuryData.balanceSol} SOL, Deployer=${deployerData.balanceSol} SOL`);
+
+    console.log(
+      `Updated wallet balances: Treasury=${treasuryData.balanceSol} SOL, Deployer=${deployerData.balanceSol} SOL`,
+    );
     return true;
   } catch (error) {
     console.error("Error syncing wallet data:", error);
@@ -213,17 +246,11 @@ async function syncWalletData(): Promise<boolean> {
   }
 }
 
-/**
- * Manual sync function for testing or on-demand updates
- */
 export async function manualSync(): Promise<SyncResult> {
   console.log("Running manual data sync...");
-  return await syncAllData();
+  return syncAllData();
 }
 
-/**
- * Get current sync status
- */
 export async function getSyncStatus(): Promise<{
   lastSync: string | null;
   slabCount: number;

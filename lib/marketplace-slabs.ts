@@ -85,8 +85,9 @@ function serializeDbSlab(slab: {
 
 function slabsFromJson(status?: string): MarketplaceSlab[] {
   const slabs = slabsJson as SlabItem[];
+  const wantStatus = status?.trim() || "AVAILABLE";
   return slabs
-    .filter(() => !status || status === "AVAILABLE")
+    .filter(() => wantStatus === "AVAILABLE")
     .map((slab) => {
       const { solPrice, svfPrice } = defaultPrices(slab.estimatedValueUsd);
       return {

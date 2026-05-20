@@ -7,9 +7,11 @@ export type SiteLinks = {
   discord: string;
   linktree: string;
   gitbook: string;
+  vollector: string;
   vaulted: string;
   collectr: string;
   collectorCryptTreasury: string;
+  collectorCryptDeployer: string;
   gachaCollectorCrypt: string;
   gachaPhygitals: string;
   gachaBeezie: string;

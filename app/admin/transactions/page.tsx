@@ -1,22 +1,12 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Breadcrumbs } from "@/components/breadcrumbs";
+import { getAdminTransactions } from "@/lib/admin-server";
 
-async function getTransactions() {
-  try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/api/admin/transactions`, {
-      cache: "no-store",
-    });
-    if (!response.ok) return [];
-    return response.json();
-  } catch (error) {
-    console.error("Error fetching transactions:", error);
-    return [];
-  }
-}
+export const dynamic = "force-dynamic";
 
 export default async function AdminTransactionsPage() {
-  const transactions = await getTransactions();
+  const transactions = await getAdminTransactions();
 
   return (
     <div className="mx-auto max-w-6xl space-y-8 px-4 py-12 sm:px-5 sm:py-16">
@@ -59,7 +49,7 @@ export default async function AdminTransactionsPage() {
                   </td>
                 </tr>
               ) : (
-                transactions.map((tx: { id: string; slab?: { name: string; grade?: string }; buyerWallet: string; status: string; createdAt: string | Date; solAmount: number; svfAmount: number }) => (
+                transactions.map((tx) => (
                   <tr key={tx.id} className="border-b border-line hover:bg-vault-panel/30 transition-colors">
                     <td className="px-6 py-4 font-mono text-sm">
                       {tx.id.slice(0, 8)}...

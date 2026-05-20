@@ -18,8 +18,20 @@ export function getPulls(): PullItem[] {
 }
 
 export function getGachaTiers(site: SiteConfig): GachaTier[] {
-  if (site.gachaTiers?.length) return site.gachaTiers;
   const { links } = site;
+  const linkByName: Record<string, string> = {
+    "Collector Crypt": links.gachaCollectorCrypt,
+    Phygitals: links.gachaPhygitals,
+    Beezie: links.gachaBeezie,
+  };
+
+  if (site.gachaTiers?.length) {
+    return site.gachaTiers.map((tier) => ({
+      ...tier,
+      href: tier.href?.trim() || linkByName[tier.name] || tier.href,
+    }));
+  }
+
   return [
     {
       name: "Collector Crypt",
