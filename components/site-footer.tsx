@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import type { SiteConfig } from "@/types/content";
 import { CopyAddressButton } from "@/components/copy-address-button";
+import { PRIMARY_NAV } from "@/lib/nav";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 
@@ -126,18 +127,11 @@ export function SiteFooter({ site }: Props) {
         <div className="space-y-2">
           <p className="text-xs font-semibold uppercase tracking-wide text-muted">Explore</p>
           <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
-            <Link href="/svf" className={footerMutedLinkClass}>
-              $SVF
-            </Link>
-            <Link href="/faq" className={footerMutedLinkClass}>
-              FAQ
-            </Link>
-            <Link href="/roadmap" className={footerMutedLinkClass}>
-              Roadmap
-            </Link>
-            <Link href="/community" className={footerMutedLinkClass}>
-              Community
-            </Link>
+            {PRIMARY_NAV.map((item) => (
+              <Link key={item.href} href={item.href} className={footerMutedLinkClass}>
+                {item.label}
+              </Link>
+            ))}
           </div>
         </div>
 

@@ -40,7 +40,7 @@ export function SiteNav({ brandName, ticker, items }: Props) {
     <>
       <nav
         aria-label="Primary navigation"
-        className="hidden max-w-[min(52vw,42rem)] items-center gap-x-0.5 overflow-x-auto md:flex [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        className="hidden min-w-0 flex-1 items-center justify-end gap-x-0.5 overflow-x-auto md:flex [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       >
         {items.map((item) => (
           <Link
