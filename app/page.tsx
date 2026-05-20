@@ -14,6 +14,7 @@ import { VaultStatsStrip } from "@/components/vault-stats-strip";
 import { WalletBalances } from "@/components/wallet-balances";
 import { Card } from "@/components/ui/card";
 import { getDexTokenStats } from "@/lib/dexscreener";
+import { normalizeSlabImageSrc } from "@/lib/slab-image-url";
 import { summarizeVault } from "@/lib/vault-stats";
 import { getPulls, getSiteConfig, getSlabs } from "@/lib/site-config";
 
@@ -22,7 +23,9 @@ export default async function Home() {
   const stats = await getDexTokenStats(site.contractAddress);
   const slabs = getSlabs();
   const pulls = getPulls();
-  const featuredSlabs = slabs.slice(0, Math.min(4, slabs.length));
+  const featuredSlabs = slabs
+    .filter((slab) => normalizeSlabImageSrc(slab.imageUrl))
+    .slice(0, 4);
   const recentPulls = pulls.slice(0, 8);
   const vaultSummary = summarizeVault(slabs, site.manualVaultValueUsd);
 

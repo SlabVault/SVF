@@ -71,7 +71,7 @@ export function HeroSection({ site, slabs }: Props) {
               {images.map((src, i) => (
                 <div
                   key={`${src}-${i}`}
-                  className="absolute overflow-hidden rounded-2xl border border-line bg-vault-panel shadow-[0_20px_50px_-20px_rgba(0,0,0,0.8)] transition-transform motion-safe:duration-500 motion-safe:hover:scale-[1.02]"
+                  className="absolute aspect-[3/4] overflow-hidden rounded-2xl border border-line bg-vault-panel shadow-[0_20px_50px_-20px_rgba(0,0,0,0.8)] transition-transform motion-safe:duration-500 motion-safe:hover:scale-[1.02]"
                   style={{
                     width: `${88 - i * 6}%`,
                     left: `${i * 8}%`,
@@ -83,8 +83,8 @@ export function HeroSection({ site, slabs }: Props) {
                   <SlabImage
                     src={src}
                     alt={`Vault slab ${i + 1}`}
-                    className="aspect-[3/4] w-full"
-                    priority={i === 0}
+                    className="h-full w-full"
+                    priority
                   />
                 </div>
               ))}

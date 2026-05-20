@@ -36,6 +36,7 @@ export function GachaTiers({ site }: Props) {
                   src={tier.imageUrl.trim()}
                   alt=""
                   className="h-full w-full object-cover opacity-90 transition-opacity group-hover:opacity-100"
+                  referrerPolicy="no-referrer"
                 />
               ) : (
                 <div className="flex h-full items-center justify-center px-4">
