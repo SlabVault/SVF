@@ -8,7 +8,7 @@
     "snsTreasury": "treasury.slabvault.sol",
     "snsDeployer": "slabvault.sol"
   },
-  "manualVaultValueUsd": null,
+  "manualVaultValueUsd": 132,
   "treasurySquadsUrl": "https://app.squads.so/squads/2oRZe7z9Jx3rpoUWuidjGhpX9mxxhtps2JqQtdxLfHwg/treasury",
   "links": {
     "pump": "https://pump.fun/coin/6ZxRa2CWtAcWKb58RMJABuiUYWu9o4oM76QCyMVLpump",
@@ -28,6 +28,26 @@
     "poolSvfCards": "https://www.meteora.ag/dammv2/4Axs5SuGTpWQhYqxqXnED1UwDq2iZ17Ub4iuF4gxC7K2?referrer=home",
     "poolSvfPigeon": "https://www.meteora.ag/dammv2/2w7cHedL4PZc6146FuaEeZKwcgPBi4AozW7NyfEoYg8W?referrer=home"
   },
+  "gachaTiers": [
+    {
+      "name": "Collector Crypt",
+      "priceLabel": "From $25",
+      "href": "https://gacha.collectorcrypt.com/r/x843qqp9u5vf",
+      "imageUrl": ""
+    },
+    {
+      "name": "Phygitals",
+      "priceLabel": "From $20",
+      "href": "https://phygitals.com/invite/slabvault",
+      "imageUrl": ""
+    },
+    {
+      "name": "Beezie",
+      "priceLabel": "From $15",
+      "href": "https://beezie.com/r/O9067G6O",
+      "imageUrl": ""
+    }
+  ],
   "stream": {
     "live": false,
     "embedUrl": "",
@@ -68,5 +88,8 @@
         "Milestones, raffles, and holder experiences tied to vault growth"
       ]
     }
-  ]
+  ],
+  "treasuryBalanceSol": 0.05792432,
+  "deployerBalanceSol": 0.032119668,
+  "lastWalletSync": "2026-05-15T19:23:06.484Z"
 }

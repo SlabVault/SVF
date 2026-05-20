@@ -1,8 +1,11 @@
+"use client";
+
 import Link from "next/link";
+import { useState } from "react";
 import type { SiteConfig } from "@/types/content";
 import { CopyAddressButton } from "@/components/copy-address-button";
-import { Disclaimer } from "@/components/disclaimer";
 import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
 
 type Props = {
   site: SiteConfig;
@@ -15,21 +18,41 @@ const footerMutedLinkClass = `${footerLinkRing} text-muted transition-colors hov
 
 const footerAccentLinkClass = `${footerLinkRing} text-vault-amber underline-offset-4 transition-colors hover:underline`;
 
+function truncateAddress(address: string): string {
+  if (address.length <= 10) return address;
+  return `${address.slice(0, 6)}...${address.slice(-4)}`;
+}
+
 export function SiteFooter({ site }: Props) {
   const { contractAddress, links, treasurySquadsUrl, vaultAddresses } = site;
+  const [showFullAddress, setShowFullAddress] = useState(false);
 
   return (
-    <footer className="border-t border-line bg-vault-deep/85">
+    <footer className="border-t border-line bg-vault-deep/85 transition-all duration-300">
       <div className="mx-auto max-w-6xl space-y-8 px-4 py-12 sm:px-5">
         <div className="grid gap-8 md:grid-cols-3">
           <div className="space-y-3">
-            <p className="font-display text-base font-semibold">{site.brandName}</p>
+            <p className="font-display text-base font-semibold text-foreground transition-colors hover:text-vault-amber">{site.brandName}</p>
             <p className="text-sm leading-relaxed text-muted">{site.tagline}</p>
           </div>
           <div className="space-y-3">
             <p className="text-sm font-semibold text-foreground">Contract</p>
-            <p className="break-all font-mono text-xs text-muted">{contractAddress}</p>
-            <CopyAddressButton address={contractAddress} />
+            <div className="space-y-2">
+              <p className="break-all font-mono text-xs text-muted">
+                {showFullAddress ? contractAddress : truncateAddress(contractAddress)}
+              </p>
+              <div className="flex gap-2">
+                <CopyAddressButton address={contractAddress} />
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-auto px-2 py-1 text-xs transition-all duration-300 hover:scale-105"
+                  onClick={() => setShowFullAddress(!showFullAddress)}
+                >
+                  {showFullAddress ? "Show less" : "Show full"}
+                </Button>
+              </div>
+            </div>
           </div>
           <div className="space-y-3">
             <p className="text-sm font-semibold text-foreground">Treasury</p>
@@ -58,36 +81,69 @@ export function SiteFooter({ site }: Props) {
 
         <Separator className="bg-line/80" />
 
-        <div className="flex flex-wrap gap-x-5 gap-y-2 text-sm">
-          <Link className={footerMutedLinkClass} href={links.pump} target="_blank" rel="noreferrer">
-            Pump.fun
-          </Link>
-          <Link className={footerMutedLinkClass} href={links.gitbook} target="_blank" rel="noreferrer">
-            GitBook
-          </Link>
-          <Link className={footerMutedLinkClass} href={links.dexscreener} target="_blank" rel="noreferrer">
-            Dexscreener
-          </Link>
-          <Link className={footerMutedLinkClass} href={links.birdeye} target="_blank" rel="noreferrer">
-            Birdeye
-          </Link>
-          <Link className={footerMutedLinkClass} href={links.twitter} target="_blank" rel="noreferrer">
-            X
-          </Link>
-          <Link className={footerMutedLinkClass} href={links.telegram} target="_blank" rel="noreferrer">
-            Telegram
-          </Link>
-          <Link className={footerMutedLinkClass} href={links.discord} target="_blank" rel="noreferrer">
-            Discord
-          </Link>
-          <Link className={footerMutedLinkClass} href={links.linktree} target="_blank" rel="noreferrer">
-            Linktree
-          </Link>
+        <div className="grid gap-6 sm:grid-cols-3">
+          <div className="space-y-2">
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted">Trading</p>
+            <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
+              <Link className={footerMutedLinkClass} href={links.pump} target="_blank" rel="noreferrer">
+                Pump.fun
+              </Link>
+              <Link className={footerMutedLinkClass} href={links.dexscreener} target="_blank" rel="noreferrer">
+                Dexscreener
+              </Link>
+              <Link className={footerMutedLinkClass} href={links.birdeye} target="_blank" rel="noreferrer">
+                Birdeye
+              </Link>
+            </div>
+          </div>
+          <div className="space-y-2">
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted">Social</p>
+            <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
+              <Link className={footerMutedLinkClass} href={links.twitter} target="_blank" rel="noreferrer">
+                X
+              </Link>
+              <Link className={footerMutedLinkClass} href={links.telegram} target="_blank" rel="noreferrer">
+                Telegram
+              </Link>
+              <Link className={footerMutedLinkClass} href={links.discord} target="_blank" rel="noreferrer">
+                Discord
+              </Link>
+              <Link className={footerMutedLinkClass} href={links.linktree} target="_blank" rel="noreferrer">
+                Linktree
+              </Link>
+            </div>
+          </div>
+          <div className="space-y-2">
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted">Documentation</p>
+            <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
+              <Link className={footerMutedLinkClass} href={links.gitbook} target="_blank" rel="noreferrer">
+                GitBook
+              </Link>
+            </div>
+          </div>
         </div>
 
-        <Disclaimer />
+        <div className="space-y-2">
+          <p className="text-xs font-semibold uppercase tracking-wide text-muted">Explore</p>
+          <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
+            <Link href="/svf" className={footerMutedLinkClass}>
+              $SVF
+            </Link>
+            <Link href="/faq" className={footerMutedLinkClass}>
+              FAQ
+            </Link>
+            <Link href="/roadmap" className={footerMutedLinkClass}>
+              Roadmap
+            </Link>
+            <Link href="/community" className={footerMutedLinkClass}>
+              Community
+            </Link>
+          </div>
+        </div>
 
-        <p className="text-xs text-muted/80">Built in public.</p>
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-xs text-muted/80">Built in public.</p>
+        </div>
       </div>
     </footer>
   );

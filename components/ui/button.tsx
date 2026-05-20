@@ -10,7 +10,7 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          "border border-vault-amber/40 bg-vault-amber text-vault-void shadow-[0_0_0_1px_rgba(251,191,36,0.15)] hover:bg-vault-amber/90",
+          "border border-vault-amber/50 bg-vault-amber text-vault-void shadow-[0_2px_12px_-2px_rgba(251,191,36,0.45)] hover:bg-[#fcd34d] hover:shadow-[0_4px_20px_-4px_rgba(251,191,36,0.55)]",
         secondary:
           "border border-line bg-vault-panel text-foreground hover:border-vault-violet/40 hover:bg-vault-panel/80",
         ghost:

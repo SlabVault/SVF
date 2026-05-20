@@ -43,6 +43,13 @@ export type RoadmapPhase = {
   items: string[];
 };
 
+export type GachaTier = {
+  name: string;
+  priceLabel: string;
+  href: string;
+  imageUrl?: string;
+};
+
 export type SiteConfig = {
   brandName: string;
   ticker: string;
@@ -56,10 +63,15 @@ export type SiteConfig = {
   manualVaultValueUsd: number | null;
   treasurySquadsUrl: string;
   links: SiteLinks;
+  gachaTiers?: GachaTier[];
   stream: SiteStream;
   latestPull: LatestPull;
   latestSlab: LatestSlab;
   roadmap: RoadmapPhase[];
+  // Optional fields for automated data sync
+  treasuryBalanceSol?: number;
+  deployerBalanceSol?: number;
+  lastWalletSync?: string;
 };
 
 export type SlabItem = {
