@@ -1,64 +1,82 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import type { PullItem } from "@/types/content";
 
+export type PullSortBy = "date" | "cost" | "roi";
+export type PullSortOrder = "asc" | "desc";
+
 type Props = {
   pulls: PullItem[];
-  onFilteredPullsChange: (pulls: PullItem[]) => void;
+  sortBy: PullSortBy;
+  sortOrder: PullSortOrder;
+  searchQuery: string;
+  onSortByChange: (sortBy: PullSortBy) => void;
+  onSortOrderChange: (sortOrder: PullSortOrder) => void;
+  onSearchQueryChange: (query: string) => void;
 };
 
-export function PullsFilters({ pulls, onFilteredPullsChange }: Props) {
-  const [sortBy, setSortBy] = useState<"date" | "cost" | "roi">("date");
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
-  const [searchQuery, setSearchQuery] = useState("");
+export function filterAndSortPulls(
+  pulls: PullItem[],
+  sortBy: PullSortBy,
+  sortOrder: PullSortOrder,
+  searchQuery: string,
+): PullItem[] {
+  let filtered = [...pulls];
 
-  const filteredPulls = useMemo(() => {
-    let filtered = [...pulls];
+  if (searchQuery.trim()) {
+    const query = searchQuery.toLowerCase();
+    filtered = filtered.filter(
+      (pull) =>
+        pull.summary.toLowerCase().includes(query) ||
+        pull.source.toLowerCase().includes(query),
+    );
+  }
 
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(
-        (pull) =>
-          pull.summary.toLowerCase().includes(query) ||
-          pull.source.toLowerCase().includes(query),
-      );
+  filtered.sort((a, b) => {
+    let comparison = 0;
+
+    if (sortBy === "date") {
+      comparison = a.date.localeCompare(b.date);
+    } else if (sortBy === "cost") {
+      const aCost = a.costUsd ?? 0;
+      const bCost = b.costUsd ?? 0;
+      comparison = aCost - bCost;
+    } else {
+      const aRoi = a.outcomeUsd && a.costUsd ? a.outcomeUsd - a.costUsd : 0;
+      const bRoi = b.outcomeUsd && b.costUsd ? b.outcomeUsd - b.costUsd : 0;
+      comparison = aRoi - bRoi;
     }
 
-    filtered.sort((a, b) => {
-      let comparison = 0;
+    return sortOrder === "asc" ? comparison : -comparison;
+  });
 
-      if (sortBy === "date") {
-        comparison = a.date.localeCompare(b.date);
-      } else if (sortBy === "cost") {
-        const aCost = a.costUsd ?? 0;
-        const bCost = b.costUsd ?? 0;
-        comparison = aCost - bCost;
-      } else if (sortBy === "roi") {
-        const aRoi = a.outcomeUsd && a.costUsd ? a.outcomeUsd - a.costUsd : 0;
-        const bRoi = b.outcomeUsd && b.costUsd ? b.outcomeUsd - b.costUsd : 0;
-        comparison = aRoi - bRoi;
-      }
+  return filtered;
+}
 
-      return sortOrder === "asc" ? comparison : -comparison;
-    });
+export function PullsFilters({
+  pulls,
+  sortBy,
+  sortOrder,
+  searchQuery,
+  onSortByChange,
+  onSortOrderChange,
+  onSearchQueryChange,
+}: Props) {
+  const resultCount = useMemo(
+    () => filterAndSortPulls(pulls, sortBy, sortOrder, searchQuery).length,
+    [pulls, sortBy, sortOrder, searchQuery],
+  );
 
-    return filtered;
-  }, [pulls, sortBy, sortOrder, searchQuery]);
-
-  const handleSortChange = (newSortBy: "date" | "cost" | "roi") => {
+  const handleSortChange = (newSortBy: PullSortBy) => {
     if (sortBy === newSortBy) {
-      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+      onSortOrderChange(sortOrder === "asc" ? "desc" : "asc");
     } else {
-      setSortBy(newSortBy);
-      setSortOrder("desc");
+      onSortByChange(newSortBy);
+      onSortOrderChange("desc");
     }
   };
-
-  useEffect(() => {
-    onFilteredPullsChange(filteredPulls);
-  }, [filteredPulls, onFilteredPullsChange]);
 
   return (
     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -88,12 +106,15 @@ export function PullsFilters({ pulls, onFilteredPullsChange }: Props) {
         >
           ROI {sortBy === "roi" && (sortOrder === "asc" ? "↑" : "↓")}
         </Button>
+        <span className="text-xs text-muted">
+          {resultCount} pull{resultCount === 1 ? "" : "s"}
+        </span>
       </div>
       <input
-        type="text"
+        type="search"
         placeholder="Search pulls..."
         value={searchQuery}
-        onChange={(e) => setSearchQuery(e.target.value)}
+        onChange={(e) => onSearchQueryChange(e.target.value)}
         className="w-full rounded-md border border-line bg-vault-panel px-3 py-2 text-sm text-foreground placeholder:text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-vault-amber/70 focus-visible:ring-offset-2 focus-visible:ring-offset-background sm:w-64"
       />
     </div>

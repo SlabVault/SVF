@@ -1,3 +1,5 @@
+import type { Metadata } from "next";
+
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -7,6 +9,16 @@ import { LinkButton } from "@/components/link-button";
 import { formatUsd } from "@/lib/format";
 import { listMarketplaceSlabs } from "@/lib/marketplace-slabs";
 import { getSiteConfig } from "@/lib/site-config";
+
+export const metadata: Metadata = {
+  title: "Marketplace",
+  description: "Purchase graded slabs from the SlabVaultFi vault with SOL and SVF.",
+  openGraph: {
+    title: "Marketplace — SlabVaultFi",
+    description: "Purchase graded slabs from the SlabVaultFi vault with SOL and SVF.",
+    url: "/marketplace",
+  },
+};
 
 /** Always read DB/JSON at request time — avoids stale empty listings from static build. */
 export const dynamic = "force-dynamic";
@@ -89,7 +101,11 @@ export default async function MarketplacePage() {
                   </Badge>
                 </div>
                 <p className="text-sm text-muted">
-                  {new Date(slab.acquiredAt).toLocaleDateString()}
+                  {new Date(slab.acquiredAt).toLocaleDateString("en-US", {
+                    month: "short",
+                    day: "numeric",
+                    year: "numeric",
+                  })}
                 </p>
               </div>
 

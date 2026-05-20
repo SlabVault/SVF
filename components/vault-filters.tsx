@@ -1,62 +1,80 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import type { SlabItem } from "@/types/content";
 
+export type VaultSortBy = "date" | "value" | "name";
+export type VaultSortOrder = "asc" | "desc";
+
 type Props = {
   slabs: SlabItem[];
-  onFilteredSlabsChange: (slabs: SlabItem[]) => void;
+  sortBy: VaultSortBy;
+  sortOrder: VaultSortOrder;
+  searchQuery: string;
+  onSortByChange: (sortBy: VaultSortBy) => void;
+  onSortOrderChange: (sortOrder: VaultSortOrder) => void;
+  onSearchQueryChange: (query: string) => void;
 };
 
-export function VaultFilters({ slabs, onFilteredSlabsChange }: Props) {
-  const [sortBy, setSortBy] = useState<"date" | "value" | "name">("date");
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
-  const [searchQuery, setSearchQuery] = useState("");
+export function filterAndSortSlabs(
+  slabs: SlabItem[],
+  sortBy: VaultSortBy,
+  sortOrder: VaultSortOrder,
+  searchQuery: string,
+): SlabItem[] {
+  let filtered = [...slabs];
 
-  const filteredSlabs = useMemo(() => {
-    let filtered = [...slabs];
+  if (searchQuery.trim()) {
+    const query = searchQuery.toLowerCase();
+    filtered = filtered.filter(
+      (slab) =>
+        slab.name.toLowerCase().includes(query) ||
+        slab.grade.toLowerCase().includes(query),
+    );
+  }
 
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(
-        (slab) =>
-          slab.name.toLowerCase().includes(query) ||
-          slab.grade.toLowerCase().includes(query),
-      );
+  filtered.sort((a, b) => {
+    let comparison = 0;
+
+    if (sortBy === "date") {
+      comparison = a.acquiredAt.localeCompare(b.acquiredAt);
+    } else if (sortBy === "value") {
+      const aValue = a.estimatedValueUsd ?? 0;
+      const bValue = b.estimatedValueUsd ?? 0;
+      comparison = aValue - bValue;
+    } else {
+      comparison = a.name.localeCompare(b.name);
     }
 
-    filtered.sort((a, b) => {
-      let comparison = 0;
+    return sortOrder === "asc" ? comparison : -comparison;
+  });
 
-      if (sortBy === "date") {
-        comparison = a.acquiredAt.localeCompare(b.acquiredAt);
-      } else if (sortBy === "value") {
-        const aValue = a.estimatedValueUsd ?? 0;
-        const bValue = b.estimatedValueUsd ?? 0;
-        comparison = aValue - bValue;
-      } else if (sortBy === "name") {
-        comparison = a.name.localeCompare(b.name);
-      }
+  return filtered;
+}
 
-      return sortOrder === "asc" ? comparison : -comparison;
-    });
+export function VaultFilters({
+  slabs,
+  sortBy,
+  sortOrder,
+  searchQuery,
+  onSortByChange,
+  onSortOrderChange,
+  onSearchQueryChange,
+}: Props) {
+  const resultCount = useMemo(
+    () => filterAndSortSlabs(slabs, sortBy, sortOrder, searchQuery).length,
+    [slabs, sortBy, sortOrder, searchQuery],
+  );
 
-    return filtered;
-  }, [slabs, sortBy, sortOrder, searchQuery]);
-
-  const handleSortChange = (newSortBy: "date" | "value" | "name") => {
+  const handleSortChange = (newSortBy: VaultSortBy) => {
     if (sortBy === newSortBy) {
-      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+      onSortOrderChange(sortOrder === "asc" ? "desc" : "asc");
     } else {
-      setSortBy(newSortBy);
-      setSortOrder("desc");
+      onSortByChange(newSortBy);
+      onSortOrderChange("desc");
     }
   };
-
-  useEffect(() => {
-    onFilteredSlabsChange(filteredSlabs);
-  }, [filteredSlabs, onFilteredSlabsChange]);
 
   return (
     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -86,12 +104,15 @@ export function VaultFilters({ slabs, onFilteredSlabsChange }: Props) {
         >
           Name {sortBy === "name" && (sortOrder === "asc" ? "↑" : "↓")}
         </Button>
+        <span className="text-xs text-muted">
+          {resultCount} slab{resultCount === 1 ? "" : "s"}
+        </span>
       </div>
       <input
-        type="text"
+        type="search"
         placeholder="Search slabs..."
         value={searchQuery}
-        onChange={(e) => setSearchQuery(e.target.value)}
+        onChange={(e) => onSearchQueryChange(e.target.value)}
         className="w-full rounded-md border border-line bg-vault-panel px-3 py-2 text-sm text-foreground placeholder:text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-vault-amber/70 focus-visible:ring-offset-2 focus-visible:ring-offset-background sm:w-64"
       />
     </div>

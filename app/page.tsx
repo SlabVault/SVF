@@ -5,7 +5,6 @@ import { HeroSection } from "@/components/hero-section";
 import { HowItWorks } from "@/components/how-it-works";
 import { LinkButton } from "@/components/link-button";
 import { LivePullBoard } from "@/components/live-pull-board";
-import { PullLoop } from "@/components/pull-loop";
 import { RecentPullsCarousel } from "@/components/recent-pulls-carousel";
 import { StatStrip } from "@/components/stat-strip";
 import { StreamEmbed } from "@/components/stream-embed";
@@ -34,8 +33,6 @@ export default async function Home() {
       <HeroSection site={site} slabs={slabs} />
 
       <div className="mx-auto max-w-6xl space-y-16 px-4 py-14 sm:space-y-20 sm:px-5 sm:py-16">
-        <PullLoop />
-
         <LivePullBoard livePull={site.livePull} stream={site.stream} />
 
         <GachaTiers site={site} />

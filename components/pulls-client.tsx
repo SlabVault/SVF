@@ -1,9 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { PullRow } from "@/components/pull-row";
 import { PullStatsStrip } from "@/components/pull-stats-strip";
-import { PullsFilters } from "@/components/pulls-filters";
+import {
+  PullsFilters,
+  filterAndSortPulls,
+  type PullSortBy,
+  type PullSortOrder,
+} from "@/components/pulls-filters";
 import { LinkButton } from "@/components/link-button";
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { SocialShare } from "@/components/social-share";
@@ -16,17 +21,15 @@ type Props = {
 };
 
 export function PullsClient({ pulls }: Props) {
-  const [filteredPulls, setFilteredPulls] = useState(pulls);
-  const [isLoading, setIsLoading] = useState(false);
-  const stats = summarizePulls(filteredPulls);
+  const [sortBy, setSortBy] = useState<PullSortBy>("date");
+  const [sortOrder, setSortOrder] = useState<PullSortOrder>("desc");
+  const [searchQuery, setSearchQuery] = useState("");
 
-  const handleFilterChange = (newFilteredPulls: PullItem[]) => {
-    setIsLoading(true);
-    setTimeout(() => {
-      setFilteredPulls(newFilteredPulls);
-      setIsLoading(false);
-    }, 300);
-  };
+  const filteredPulls = useMemo(
+    () => filterAndSortPulls(pulls, sortBy, sortOrder, searchQuery),
+    [pulls, sortBy, sortOrder, searchQuery],
+  );
+  const stats = summarizePulls(filteredPulls);
 
   return (
     <div className="mx-auto max-w-6xl space-y-12 px-4 py-14 sm:space-y-14 sm:px-5 sm:py-16">
@@ -58,30 +61,31 @@ export function PullsClient({ pulls }: Props) {
 
       <PullStatsStrip stats={stats} />
 
-      <PullsFilters pulls={pulls} onFilteredPullsChange={handleFilterChange} />
+      <PullsFilters
+        pulls={pulls}
+        sortBy={sortBy}
+        sortOrder={sortOrder}
+        searchQuery={searchQuery}
+        onSortByChange={setSortBy}
+        onSortOrderChange={setSortOrder}
+        onSearchQueryChange={setSearchQuery}
+      />
 
       <div className="space-y-3 animate-slide-in">
-        {isLoading
-          ? Array.from({ length: 5 }).map((_, index) => (
-              <Card key={index} className="p-5 animate-pulse">
-                <div className="h-4 w-24 bg-vault-panel rounded mb-3" />
-                <div className="h-3 w-3/4 bg-vault-panel rounded" />
-              </Card>
-            ))
-          : filteredPulls.length === 0
-            ? (
-              <Card className="space-y-4 p-8 text-center bg-gradient-to-br from-vault-panel/50 to-vault-deep/50">
-                <p className="font-display text-2xl font-semibold text-foreground">No pulls found</p>
-                <p className="text-muted">
-                  Try adjusting your filters or check back later for new pull history.
-                </p>
-              </Card>
-            )
-            : filteredPulls.map((pull, index) => (
-                <div key={pull.id} style={{ animationDelay: `${index * 50}ms` }} className="animate-fade-in-up">
-                  <PullRow pull={pull} />
-                </div>
-              ))}
+        {filteredPulls.length === 0 ? (
+          <Card className="space-y-4 p-8 text-center bg-gradient-to-br from-vault-panel/50 to-vault-deep/50">
+            <p className="font-display text-2xl font-semibold text-foreground">No pulls found</p>
+            <p className="text-muted">
+              Try adjusting your filters or check back later for new pull history.
+            </p>
+          </Card>
+        ) : (
+          filteredPulls.map((pull, index) => (
+            <div key={pull.id} style={{ animationDelay: `${index * 50}ms` }} className="animate-fade-in-up">
+              <PullRow pull={pull} />
+            </div>
+          ))
+        )}
       </div>
     </div>
   );

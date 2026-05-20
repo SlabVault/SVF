@@ -35,18 +35,21 @@ export function SocialShare({ url, title }: Props) {
   return (
     <div className="flex flex-wrap items-center gap-2">
       <span className="text-sm text-muted">Share:</span>
-      {shareLinks.map((link) => (
-        <Button
-          key={link.name}
-          variant="ghost"
-          size="sm"
-          className="text-xs"
-          onClick={link.action}
-          asChild={!link.action}
-        >
-          {link.action ? (
-            <button onClick={link.action}>{link.name}</button>
-          ) : (
+      {shareLinks.map((link) =>
+        link.action ? (
+          <Button
+            key={link.name}
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="text-xs"
+            onClick={link.action}
+            aria-label={link.label}
+          >
+            {link.name}
+          </Button>
+        ) : (
+          <Button key={link.name} variant="ghost" size="sm" className="text-xs" asChild>
             <a
               href={link.href}
               target="_blank"
@@ -55,9 +58,9 @@ export function SocialShare({ url, title }: Props) {
             >
               {link.name}
             </a>
-          )}
-        </Button>
-      ))}
+          </Button>
+        ),
+      )}
     </div>
   );
 }
