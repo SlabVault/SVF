@@ -45,9 +45,14 @@ export function useLoadedImage(src: string) {
     img.addEventListener("error", onError);
     syncFromImg();
 
+    const poll = window.setInterval(syncFromImg, 200);
+    const stopPoll = window.setTimeout(() => window.clearInterval(poll), 30_000);
+
     return () => {
       img.removeEventListener("load", onLoad);
       img.removeEventListener("error", onError);
+      window.clearInterval(poll);
+      window.clearTimeout(stopPoll);
     };
   }, [src, syncFromImg]);
 

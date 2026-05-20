@@ -23,17 +23,20 @@ function SlabImageInner({ src, alt, className, priority = false }: Props) {
 
   return (
     <div className={`relative ${className}`}>
-      {!loaded && (
-        <div className="absolute inset-0 flex items-center justify-center bg-vault-deep/50">
+      {!loaded && !error && (
+        <div
+          className="absolute inset-0 z-0 flex items-center justify-center bg-vault-deep/50"
+          aria-hidden
+        >
           <div className="h-8 w-8 animate-pulse rounded-full bg-vault-violet/30" />
         </div>
       )}
-      {/* eslint-disable-next-line @next/next/no-img-element -- dynamic URLs from JSON */}
+      {/* eslint-disable-next-line @next/next/no-img-element -- dynamic Vollector/Arweave URLs */}
       <img
         ref={imgRef}
         src={src}
         alt={alt}
-        className={`h-full w-full object-cover ${loaded ? "opacity-100" : "opacity-0"} transition-opacity duration-300`}
+        className="relative z-10 h-full w-full object-cover"
         loading={priority ? "eager" : "lazy"}
         decoding="async"
         referrerPolicy="no-referrer"
