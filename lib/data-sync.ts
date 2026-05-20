@@ -144,6 +144,16 @@ export async function syncAllData(): Promise<SyncResult> {
 
     result.success =
       result.slabsUpdated || result.pullsUpdated || result.walletDataUpdated;
+
+    if (result.success) {
+      const sitePath = join(process.cwd(), "data", "site.json");
+      const updatedSite = {
+        ...siteJson,
+        lastSyncAt: result.timestamp,
+      };
+      await writeFile(sitePath, JSON.stringify(updatedSite, null, 2), "utf-8");
+    }
+
     console.log("Data sync completed:", result);
 
     return result;
@@ -256,8 +266,9 @@ export async function getSyncStatus(): Promise<{
   slabCount: number;
   pullCount: number;
 }> {
+  const site = siteJson as { lastSyncAt?: string; lastWalletSync?: string };
   return {
-    lastSync: siteJson.lastWalletSync || null,
+    lastSync: site.lastSyncAt ?? site.lastWalletSync ?? null,
     slabCount: slabsJson.length,
     pullCount: pullsJson.length,
   };

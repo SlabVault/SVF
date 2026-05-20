@@ -3,13 +3,16 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { SlabImage } from "@/components/slab-image";
 import { Breadcrumbs } from "@/components/breadcrumbs";
+import { LinkButton } from "@/components/link-button";
 import { formatUsd } from "@/lib/format";
 import { listMarketplaceSlabs } from "@/lib/marketplace-slabs";
+import { getSiteConfig } from "@/lib/site-config";
 
 /** Always read DB/JSON at request time — avoids stale empty listings from static build. */
 export const dynamic = "force-dynamic";
 
 export default async function MarketplacePage() {
+  const site = getSiteConfig();
   const { slabs, fromFallback } = await listMarketplaceSlabs({
     status: "AVAILABLE",
   });
@@ -43,20 +46,21 @@ export default async function MarketplacePage() {
 
       {slabs.length === 0 ? (
         <Card className="space-y-4 p-12 text-center">
-          <p className="text-lg text-muted">
-            No slabs available for purchase at this time.
+          <p className="text-lg font-medium text-foreground">
+            Next listing after tonight&apos;s stream
           </p>
           <p className="text-sm text-muted">
-            Add listings in the admin dashboard, run{" "}
-            <code className="text-foreground">npm run db:seed</code>, or populate{" "}
-            <code className="text-foreground">data/slabs.json</code>.
+            New vault slabs are listed after live pulls. Follow for drop alerts.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
-            <Button asChild>
-              <a href="/admin/slabs/new">Add slab in admin</a>
-            </Button>
+            <LinkButton href={site.links.twitter} external>
+              Follow on X
+            </LinkButton>
+            <LinkButton href={site.links.telegram} external variant="secondary">
+              Telegram
+            </LinkButton>
             <Button variant="outline" asChild>
-              <a href="/admin/login">Admin login</a>
+              <a href="/streams">Streams</a>
             </Button>
           </div>
         </Card>

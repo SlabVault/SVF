@@ -4,19 +4,23 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Breadcrumbs } from "@/components/breadcrumbs";
+import { AdminSyncPanel } from "@/components/admin-sync-panel";
 import {
   getAdminSlabs,
   getAdminTransactions,
   isAdminApiConfigured,
 } from "@/lib/admin-server";
+import { getSiteConfig } from "@/lib/site-config";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminPage() {
+  const site = getSiteConfig();
   const [slabs, transactions] = await Promise.all([
     getAdminSlabs(),
     getAdminTransactions(),
   ]);
+  const lastSyncAt = site.lastSyncAt ?? site.lastWalletSync ?? null;
   const adminConfigured = isAdminApiConfigured();
   const dbConfigured = Boolean(process.env.DATABASE_URL?.trim());
 
@@ -106,9 +110,11 @@ export default async function AdminPage() {
                       variant={
                         tx.status === "COMPLETED"
                           ? "default"
-                          : tx.status === "PENDING"
-                          ? "secondary"
-                          : "outline"
+                          : tx.status === "PENDING_FULFILLMENT"
+                            ? "live"
+                            : tx.status === "PENDING"
+                              ? "secondary"
+                              : "outline"
                       }
                     >
                       {tx.status}
@@ -170,6 +176,8 @@ export default async function AdminPage() {
         </Card>
       </div>
 
+      <AdminSyncPanel lastSyncAt={lastSyncAt} />
+
       <Card className="space-y-4 p-6 bg-gradient-to-br from-vault-panel/50 to-vault-deep/50">
         <h2 className="font-display text-xl font-semibold">Quick Actions</h2>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -180,7 +188,7 @@ export default async function AdminPage() {
             <a href="/admin/login">Admin Login</a>
           </Button>
           <Button variant="outline" className="h-auto py-4" asChild>
-            <a href="/marketplace">View Marketplace</a>
+            <Link href="/marketplace">View Marketplace</Link>
           </Button>
         </div>
       </Card>

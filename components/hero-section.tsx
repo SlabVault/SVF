@@ -1,6 +1,8 @@
+import Link from "next/link";
 import { LinkButton } from "@/components/link-button";
 import { SlabImage } from "@/components/slab-image";
 import { Badge } from "@/components/ui/badge";
+import { getHeroSlabImageUrls } from "@/lib/slab-image-url";
 import { getPrimaryGachaHref } from "@/lib/site-config";
 import type { SiteConfig, SlabItem } from "@/types/content";
 
@@ -9,18 +11,8 @@ type Props = {
   slabs: SlabItem[];
 };
 
-function heroSlabImages(site: SiteConfig, slabs: SlabItem[]): string[] {
-  const fromSlabs = slabs
-    .map((s) => s.imageUrl?.trim())
-    .filter((url): url is string => Boolean(url));
-  if (fromSlabs.length >= 2) return fromSlabs.slice(0, 4);
-  const latest = site.latestSlab.imageUrl?.trim();
-  if (latest) return [latest, ...fromSlabs].slice(0, 4);
-  return fromSlabs.slice(0, 4);
-}
-
 export function HeroSection({ site, slabs }: Props) {
-  const images = heroSlabImages(site, slabs);
+  const images = getHeroSlabImageUrls(site, slabs);
   const pullHref = getPrimaryGachaHref(site);
 
   return (
@@ -47,7 +39,7 @@ export function HeroSection({ site, slabs }: Props) {
           <p className="max-w-prose text-lg leading-relaxed text-muted sm:text-xl">
             {site.description}
           </p>
-          <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:gap-3">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
             <LinkButton
               href={pullHref}
               external
@@ -55,17 +47,21 @@ export function HeroSection({ site, slabs }: Props) {
             >
               Pull now
             </LinkButton>
-            <LinkButton href="/marketplace" variant="secondary" className="w-full sm:w-auto">
-              Marketplace
-            </LinkButton>
-            <LinkButton
-              href={site.treasurySquadsUrl}
-              external
-              variant="ghost"
-              className="w-full sm:w-auto"
-            >
-              Squads treasury
-            </LinkButton>
+            <p className="text-sm text-muted">
+              <Link
+                href="/marketplace"
+                className="font-semibold text-vault-amber underline-offset-4 hover:underline"
+              >
+                Marketplace
+              </Link>
+              <span className="mx-2 text-line">·</span>
+              <Link
+                href="/vault"
+                className="font-semibold text-muted underline-offset-4 hover:text-foreground hover:underline"
+              >
+                Vault
+              </Link>
+            </p>
           </div>
         </div>
 
@@ -88,6 +84,7 @@ export function HeroSection({ site, slabs }: Props) {
                     src={src}
                     alt={`Vault slab ${i + 1}`}
                     className="aspect-[3/4] w-full"
+                    priority={i === 0}
                   />
                 </div>
               ))}

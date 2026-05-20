@@ -1,12 +1,14 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Breadcrumbs } from "@/components/breadcrumbs";
-import { getAdminTransactions } from "@/lib/admin-server";
+import { FulfillmentActions } from "@/components/admin-fulfillment-actions";
+import { getAdminTransactions, isAdminApiConfigured } from "@/lib/admin-server";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminTransactionsPage() {
   const transactions = await getAdminTransactions();
+  const adminConfigured = isAdminApiConfigured();
 
   return (
     <div className="mx-auto max-w-6xl space-y-8 px-4 py-12 sm:px-5 sm:py-16">
@@ -23,7 +25,8 @@ export default async function AdminTransactionsPage() {
           Transaction History
         </h1>
         <p className="text-lg text-muted">
-          View and manage all marketplace transactions.
+          View marketplace payments and mark slab fulfillment complete after
+          transferring from the deployer vault (slabvault.sol).
         </p>
       </div>
 
@@ -39,12 +42,13 @@ export default async function AdminTransactionsPage() {
                 <th className="px-6 py-4 text-left text-sm font-medium text-muted">SVF</th>
                 <th className="px-6 py-4 text-left text-sm font-medium text-muted">Status</th>
                 <th className="px-6 py-4 text-left text-sm font-medium text-muted">Date</th>
+                <th className="px-6 py-4 text-left text-sm font-medium text-muted">Fulfillment</th>
               </tr>
             </thead>
             <tbody>
               {transactions.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-6 py-12 text-center text-muted">
+                  <td colSpan={8} className="px-6 py-12 text-center text-muted">
                     No transactions found yet.
                   </td>
                 </tr>
@@ -68,9 +72,11 @@ export default async function AdminTransactionsPage() {
                         variant={
                           tx.status === "COMPLETED"
                             ? "default"
-                            : tx.status === "PENDING"
-                            ? "secondary"
-                            : "outline"
+                            : tx.status === "PENDING_FULFILLMENT"
+                              ? "live"
+                              : tx.status === "PENDING"
+                                ? "secondary"
+                                : "outline"
                         }
                       >
                         {tx.status}
@@ -78,6 +84,13 @@ export default async function AdminTransactionsPage() {
                     </td>
                     <td className="px-6 py-4 text-sm">
                       {new Date(tx.createdAt).toLocaleDateString()}
+                    </td>
+                    <td className="px-6 py-4">
+                      <FulfillmentActions
+                        transactionId={tx.id}
+                        status={tx.status}
+                        adminPasswordConfigured={adminConfigured}
+                      />
                     </td>
                   </tr>
                 ))

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { validateWalletAddress } from "@/lib/security";
 
 /**
  * POST /api/marketplace/reserve - Reserve slab for purchase
@@ -8,6 +9,27 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
     const { slabId, buyerWallet } = body;
+
+    if (!slabId || !buyerWallet) {
+      return NextResponse.json(
+        { error: "slabId and buyerWallet are required" },
+        { status: 400 },
+      );
+    }
+
+    if (!validateWalletAddress(buyerWallet)) {
+      return NextResponse.json(
+        { error: "Invalid buyer wallet address" },
+        { status: 400 },
+      );
+    }
+
+    if (!process.env.DATABASE_URL?.trim()) {
+      return NextResponse.json(
+        { error: "Database required for checkout. Set DATABASE_URL and run db:seed." },
+        { status: 503 },
+      );
+    }
 
     // Check if slab exists and is available
     const slab = await prisma.slab.findUnique({

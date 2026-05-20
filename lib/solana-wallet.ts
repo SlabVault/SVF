@@ -1,7 +1,9 @@
 import { Connection, PublicKey, ParsedAccountData } from "@solana/web3.js";
 
 // RPC provider - use Helius or QuickNode for production
-const RPC_URL = process.env.SOLANA_RPC_URL || "https://api.mainnet-beta.solana.com";
+import { getSolanaRpcUrl } from "@/lib/marketplace-config";
+
+const RPC_URL = getSolanaRpcUrl();
 
 export type WalletTokenBalance = {
   mint: string;

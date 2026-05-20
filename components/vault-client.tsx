@@ -47,7 +47,10 @@ export function VaultClient({ site, slabs }: Props) {
           <SocialShare url="/vault" title="SlabVaultFi Vault" description="View the community-owned collectible vault" />
         </div>
         <div className="flex flex-wrap gap-3">
-          <LinkButton href={site.links.vaulted} external variant="secondary" className="transition-all duration-300 hover:scale-105">
+          <LinkButton href="/vault/proof" variant="secondary" className="transition-all duration-300 hover:scale-105">
+            Proof of reserves
+          </LinkButton>
+          <LinkButton href={site.links.vaulted} external variant="ghost" className="transition-all duration-300 hover:scale-105">
             Vaulted profile
           </LinkButton>
           <LinkButton href={site.links.collectr} external variant="ghost" className="transition-all duration-300 hover:scale-105">

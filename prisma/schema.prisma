@@ -32,19 +32,21 @@ model Slab {
 }
 
 model Transaction {
-  id               String           @id @default(cuid())
-  slabId           String
-  slab             Slab             @relation(fields: [slabId], references: [id])
-  buyerWallet      String
-  solAmount        Decimal
-  svfAmount        Decimal
-  totalUsdValue    Decimal?
-  status           TransactionStatus @default(PENDING)
+  id                   String            @id @default(cuid())
+  slabId               String
+  slab                 Slab              @relation(fields: [slabId], references: [id])
+  buyerWallet          String
+  solAmount            Decimal
+  svfAmount            Decimal
+  totalUsdValue        Decimal?
+  status               TransactionStatus @default(PENDING)
   transactionSignature String?
-  burnSignature    String?
-  createdAt        DateTime         @default(now())
-  updatedAt        DateTime         @updatedAt
-  completedAt      DateTime?
+  burnSignature        String?
+  fulfillmentSignature String?
+  createdAt            DateTime          @default(now())
+  updatedAt            DateTime          @updatedAt
+  completedAt          DateTime?
+  fulfilledAt          DateTime?
 }
 
 model User {
@@ -115,6 +117,7 @@ enum SlabStatus {
 
 enum TransactionStatus {
   PENDING
+  PENDING_FULFILLMENT
   COMPLETED
   FAILED
   CANCELLED

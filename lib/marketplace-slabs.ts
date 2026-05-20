@@ -142,15 +142,19 @@ export async function listMarketplaceSlabs(options?: {
       orderBy: { createdAt: "desc" },
     });
 
+    const jsonSlabs = slabsFromJson(status);
+
     if (rows.length > 0) {
+      const dbSlabs = rows.map(serializeDbSlab);
+      const dbIds = new Set(dbSlabs.map((s) => s.id));
+      const extraFromJson = jsonSlabs.filter((s) => !dbIds.has(s.id));
       return {
-        slabs: rows.map(serializeDbSlab),
-        fromFallback: false,
+        slabs: [...dbSlabs, ...extraFromJson],
+        fromFallback: extraFromJson.length > 0,
       };
     }
 
-    const fallback = slabsFromJson(status);
-    return { slabs: fallback, fromFallback: fallback.length > 0 };
+    return { slabs: jsonSlabs, fromFallback: jsonSlabs.length > 0 };
   } catch (error) {
     console.error("Marketplace DB unavailable, using slabs.json:", error);
     return { slabs: slabsFromJson(status), fromFallback: true };

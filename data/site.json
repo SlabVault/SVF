@@ -6,7 +6,9 @@
   "contractAddress": "6ZxRa2CWtAcWKb58RMJABuiUYWu9o4oM76QCyMVLpump",
   "vaultAddresses": {
     "snsTreasury": "treasury.slabvault.sol",
-    "snsDeployer": "slabvault.sol"
+    "snsDeployer": "slabvault.sol",
+    "treasury": "2oRZe7z9Jx3rpoUWuidjGhpX9mxxhtps2JqQtdxLfHwg",
+    "deployer": "CWqc6DQhHxdnDSwrjG3LGnyWPQ3dRNfCY5umvTj8NBE3"
   },
   "manualVaultValueUsd": 132,
   "treasurySquadsUrl": "https://app.squads.so/squads/2oRZe7z9Jx3rpoUWuidjGhpX9mxxhtps2JqQtdxLfHwg/treasury",
@@ -50,6 +52,28 @@
       "imageUrl": ""
     }
   ],
+  "livePull": {
+    "active": false,
+    "title": "Tonight's stream pull",
+    "partner": "Collector Crypt",
+    "url": "https://gacha.collectorcrypt.com/r/x843qqp9u5vf",
+    "endsAt": "",
+    "message": ""
+  },
+  "collectorCryptAccounts": [
+    {
+      "label": "Treasury",
+      "url": "https://collectorcrypt.com/account/2oRZe7z9Jx3rpoUWuidjGhpX9mxxhtps2JqQtdxLfHwg"
+    },
+    {
+      "label": "Deployer",
+      "url": "https://collectorcrypt.com/account/CWqc6DQhHxdnDSwrjG3LGnyWPQ3dRNfCY5umvTj8NBE3"
+    }
+  ],
+  "vollector": {
+    "label": "Vollector vault",
+    "url": "https://vollector.id/u/SlabVaultFi"
+  },
   "stream": {
     "live": false,
     "embedUrl": "",
@@ -63,10 +87,10 @@
     "clipUrl": ""
   },
   "latestSlab": {
-    "name": "Example slab",
-    "grade": "PSA 10",
-    "imageUrl": "",
-    "note": "Add imageUrl in site.json when you have a hosted asset."
+    "name": "Snorlax #181 2023",
+    "grade": "CGC Pristine 10",
+    "imageUrl": "https://d1xpxki1g4htqu.cloudfront.net/TETSVpfq2U2PaUWbG9omPdDdBMtMBA0x-Jlrwooj_ek",
+    "note": "Copy imageUrl from Vollector / Collector Crypt CDN when adding new highlights."
   },
   "roadmap": [
     {
@@ -91,7 +115,8 @@
       ]
     }
   ],
-  "treasuryBalanceSol": 0.05792432,
-  "deployerBalanceSol": 0.032119668,
-  "lastWalletSync": "2026-05-15T19:23:06.484Z"
+  "treasuryBalanceSol": 0.00292432,
+  "deployerBalanceSol": 0.005140405,
+  "lastWalletSync": "2026-05-20T13:33:35.871Z",
+  "lastSyncAt": "2026-05-20T13:57:17.393Z"
 }

@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 
 import { SiteNav } from "@/components/site-nav";
@@ -18,9 +19,17 @@ export function SiteHeader({ brandName, ticker }: Props) {
           href="/"
           aria-label={`${brandName} home`}
           className={cn(
-            "group flex min-w-0 shrink-0 items-baseline gap-2 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-vault-amber/70 focus-visible:ring-offset-2 focus-visible:ring-offset-background transition-colors",
+            "group flex min-w-0 shrink-0 items-center gap-2.5 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-vault-amber/70 focus-visible:ring-offset-2 focus-visible:ring-offset-background transition-colors",
           )}
         >
+          <Image
+            src="/logo.png"
+            alt="SlabVaultFi"
+            width={36}
+            height={36}
+            className="h-9 w-9 shrink-0 rounded-full object-cover ring-1 ring-vault-violet/40"
+            priority
+          />
           <span className="truncate font-display text-lg font-semibold tracking-tight text-foreground transition-colors group-hover:text-vault-amber">
             {brandName}
           </span>

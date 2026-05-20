@@ -25,6 +25,25 @@ export type SiteStream = {
   watchUrl: string;
 };
 
+export type LivePull = {
+  active: boolean;
+  title: string;
+  partner: string;
+  url: string;
+  endsAt?: string;
+  message?: string;
+};
+
+export type CollectorCryptAccount = {
+  label: string;
+  url: string;
+};
+
+export type VollectorProfile = {
+  label: string;
+  url: string;
+};
+
 export type LatestPull = {
   title: string;
   date: string;
@@ -61,10 +80,15 @@ export type SiteConfig = {
   vaultAddresses: {
     snsTreasury: string;
     snsDeployer: string;
+    treasury: string;
+    deployer: string;
   };
   manualVaultValueUsd: number | null;
   treasurySquadsUrl: string;
   links: SiteLinks;
+  livePull: LivePull;
+  collectorCryptAccounts: CollectorCryptAccount[];
+  vollector: VollectorProfile;
   gachaTiers?: GachaTier[];
   stream: SiteStream;
   latestPull: LatestPull;
@@ -74,6 +98,7 @@ export type SiteConfig = {
   treasuryBalanceSol?: number;
   deployerBalanceSol?: number;
   lastWalletSync?: string;
+  lastSyncAt?: string;
 };
 
 export type SlabItem = {

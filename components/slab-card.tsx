@@ -1,19 +1,19 @@
 "use client";
 
-import { useState } from "react";
 import type { SlabItem } from "@/types/content";
+import { SlabImage } from "@/components/slab-image";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { formatUsd } from "@/lib/format";
+import { normalizeSlabImageSrc } from "@/lib/slab-image-url";
 
 type Props = {
   slab: SlabItem;
 };
 
 export function SlabCard({ slab }: Props) {
-  const [imageError, setImageError] = useState(false);
-  const [imageLoaded, setImageLoaded] = useState(false);
+  const imageSrc = normalizeSlabImageSrc(slab.imageUrl);
   const fmv =
     slab.estimatedValueUsd != null
       ? formatUsd(slab.estimatedValueUsd)
@@ -21,32 +21,19 @@ export function SlabCard({ slab }: Props) {
 
   return (
     <Card className="group flex flex-col overflow-hidden p-0 transition-[border-color,box-shadow] hover:border-vault-violet/30 hover:shadow-[0_0_28px_-12px_rgba(139,92,246,0.45)]">
-      <div className="relative aspect-[4/3] bg-gradient-to-br from-vault-violet/20 to-vault-deep">
-        {slab.imageUrl && !imageError ? (
-          <>
-            {!imageLoaded && (
-              <div className="absolute inset-0 flex items-center justify-center bg-vault-deep/50">
-                <div className="h-8 w-8 motion-safe:animate-pulse rounded-full bg-vault-violet/30" />
-              </div>
-            )}
-            {/* eslint-disable-next-line @next/next/no-img-element -- dynamic URLs from JSON */}
-            <img
-              src={slab.imageUrl}
-              alt={`${slab.name} slab (${slab.grade})`}
-              className={`h-full w-full object-cover transition-transform duration-300 motion-safe:group-hover:scale-[1.02] ${
-                imageLoaded ? "opacity-100" : "opacity-0"
-              }`}
-              loading="lazy"
-              onLoad={() => setImageLoaded(true)}
-              onError={() => setImageError(true)}
-            />
-          </>
+      <div className="relative aspect-[4/3] overflow-hidden bg-gradient-to-br from-vault-violet/20 to-vault-deep">
+        {imageSrc ? (
+          <SlabImage
+            src={imageSrc}
+            alt={`${slab.name} slab (${slab.grade})`}
+            className="h-full w-full transition-transform duration-300 motion-safe:group-hover:scale-[1.02]"
+          />
         ) : (
           <div className="flex h-full items-center justify-center bg-vault-deep/50">
             <p className="text-sm text-muted">No image available</p>
           </div>
         )}
-        <div className="absolute left-3 top-3">
+        <div className="pointer-events-none absolute left-3 top-3">
           <Badge variant="grade">{slab.grade}</Badge>
         </div>
       </div>
