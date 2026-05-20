@@ -4,6 +4,8 @@ import type { NextConfig } from "next";
 const walletStub = path.resolve(__dirname, "lib/wallet-adapters-stub.ts");
 
 const nextConfig: NextConfig = {
+  // Allow LAN / custom host access to dev HMR and /_next/* (see Next 16 allowedDevOrigins)
+  allowedDevOrigins: ["192.168.178.120", "192.168.*.*"],
   turbopack: {
     resolveAlias: {
       "@solana/wallet-adapter-wallets": walletStub,
