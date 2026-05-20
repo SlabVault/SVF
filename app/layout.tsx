@@ -6,6 +6,7 @@ import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { BackToTop } from "@/components/back-to-top";
 import { WalletProvider } from "@/components/wallet-provider";
+import { getDexTokenStats } from "@/lib/dexscreener";
 import { getSiteConfig } from "@/lib/site-config";
 
 const display = Fraunces({
@@ -65,12 +66,13 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   const site = getSiteConfig();
+  const tokenStats = await getDexTokenStats(site.contractAddress);
 
   return (
     <html
@@ -89,7 +91,11 @@ export default function RootLayout({
         </a>
         <WalletProvider>
           <div className="flex min-h-full flex-col">
-            <SiteHeader brandName={site.brandName} ticker={site.ticker} />
+            <SiteHeader
+              brandName={site.brandName}
+              ticker={site.ticker}
+              svfPriceUsd={tokenStats?.priceUsd ?? null}
+            />
             <main id="main" className="flex-1">
               {children}
             </main>

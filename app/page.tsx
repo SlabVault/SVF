@@ -6,20 +6,16 @@ import { HowItWorks } from "@/components/how-it-works";
 import { LinkButton } from "@/components/link-button";
 import { LivePullBoard } from "@/components/live-pull-board";
 import { RecentPullsCarousel } from "@/components/recent-pulls-carousel";
-import { StatStrip } from "@/components/stat-strip";
 import { StreamEmbed } from "@/components/stream-embed";
 import { SlabCard } from "@/components/slab-card";
 import { VaultStatsStrip } from "@/components/vault-stats-strip";
-import { WalletBalances } from "@/components/wallet-balances";
 import { Card } from "@/components/ui/card";
-import { getDexTokenStats } from "@/lib/dexscreener";
 import { normalizeSlabImageSrc } from "@/lib/slab-image-url";
 import { summarizeVault } from "@/lib/vault-stats";
 import { getPulls, getSiteConfig, getSlabs } from "@/lib/site-config";
 
 export default async function Home() {
   const site = getSiteConfig();
-  const stats = await getDexTokenStats(site.contractAddress);
   const slabs = getSlabs();
   const pulls = getPulls();
   const featuredSlabs = slabs
@@ -32,7 +28,7 @@ export default async function Home() {
     <>
       <HeroSection site={site} slabs={slabs} />
 
-      <div className="mx-auto max-w-6xl space-y-16 px-4 py-14 sm:space-y-20 sm:px-5 sm:py-16">
+      <div className="mx-auto max-w-6xl space-y-14 px-4 py-12 sm:space-y-16 sm:px-5 sm:py-14">
         <LivePullBoard livePull={site.livePull} stream={site.stream} />
 
         <GachaTiers site={site} />
@@ -57,23 +53,13 @@ export default async function Home() {
 
         <RecentPullsCarousel pulls={recentPulls} />
 
-        <WalletBalances site={site} />
-
-        <StreamEmbed
-          live={site.stream.live}
-          embedUrl={site.stream.embedUrl}
-          watchUrl={site.stream.watchUrl}
-        />
-
-        <section className="space-y-4">
-          <h2 className="font-heading text-xl font-semibold text-muted">Market snapshot</h2>
-          <StatStrip
-            stats={stats}
-            dexscreenerUrl={site.links.dexscreener}
-            birdeyeUrl={site.links.birdeye}
-            manualVaultValueUsd={site.manualVaultValueUsd}
+        {site.stream.live || site.stream.embedUrl ? (
+          <StreamEmbed
+            live={site.stream.live}
+            embedUrl={site.stream.embedUrl}
+            watchUrl={site.stream.watchUrl}
           />
-        </section>
+        ) : null}
 
         <HowItWorks />
 

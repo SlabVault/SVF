@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { SiteNav } from "@/components/site-nav";
+import { SvfPricePill } from "@/components/svf-price-pill";
 import { WalletButton } from "@/components/wallet-button";
 import { INTERNAL_NAV } from "@/lib/nav";
 import { cn } from "@/lib/utils";
@@ -9,9 +10,10 @@ import { cn } from "@/lib/utils";
 type Props = {
   brandName: string;
   ticker: string;
+  svfPriceUsd?: number | null;
 };
 
-export function SiteHeader({ brandName, ticker }: Props) {
+export function SiteHeader({ brandName, ticker, svfPriceUsd = null }: Props) {
   return (
     <header className="sticky top-0 z-50 border-b border-line bg-vault-void/80 backdrop-blur-md supports-[backdrop-filter]:bg-vault-void/65 transition-all duration-300">
       <div className="relative mx-auto flex max-w-7xl items-center gap-3 px-4 py-3.5 sm:gap-4 sm:px-5 sm:py-4">
@@ -41,6 +43,7 @@ export function SiteHeader({ brandName, ticker }: Props) {
           </span>
         </Link>
         <div className="flex min-w-0 flex-1 items-center justify-end gap-2 sm:gap-3">
+          <SvfPricePill priceUsd={svfPriceUsd ?? null} />
           <SiteNav brandName={brandName} ticker={ticker} items={INTERNAL_NAV} />
           <div className="shrink-0">
             <WalletButton />

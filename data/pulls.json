@@ -1,20 +1,42 @@
 [
   {
-    "id": "example-1",
-    "date": "2026-05-2",
+    "id": "pull-snorlax-may20",
+    "date": "2026-05-20",
     "source": "Collector Crypt",
-    "summary": "Snorlax #181 CGC 10 Pristine 2023 ",
+    "summary": "Snorlax #181 — CGC Pristine 10 (2023 Paldea Evolved)",
     "costUsd": 50,
-    "outcomeUsd": 57,
-    "clipUrl": "https://gacha.collectorcrypt.com/?replay=cc-2daf7f1c-8553-437f-a57d-de42baf15abd"
+    "outcomeUsd": 74,
+    "clipUrl": "https://gacha.collectorcrypt.com/?replay=cc-2daf7f1c-8553-437f-a57d-de42baf15abd",
+    "imageUrl": "https://d1xpxki1g4htqu.cloudfront.net/TETSVpfq2U2PaUWbG9omPdDdBMtMBA0x-Jlrwooj_ek"
   },
   {
-    "id": "example-2",
-    "date": "2026-05-2",
+    "id": "pull-psyduck-may20",
+    "date": "2026-05-20",
     "source": "Collector Crypt",
-    "summary": "Psyduck #175 PSA 10 2023 ",
+    "summary": "Psyduck #175 — PSA Mint 9 (2023 Paldea Evolved)",
     "costUsd": 50,
-    "outcomeUsd": 75,
-    "clipUrl": "https://gacha.collectorcrypt.com/?replay=cc-a26c4d20-2702-4261-bd7a-853f68f2b3c7"
+    "outcomeUsd": 63,
+    "clipUrl": "https://gacha.collectorcrypt.com/?replay=cc-a26c4d20-2702-4261-bd7a-853f68f2b3c7",
+    "imageUrl": "https://d1xpxki1g4htqu.cloudfront.net/RnEVOVapcy90IhtbU8dsCPhFrPrFTauoNJM8bh7Wl88"
+  },
+  {
+    "id": "pull-skarmory-may20",
+    "date": "2026-05-20",
+    "source": "Collector Crypt",
+    "summary": "Skarmory #53 — CGC Gem Mint 10 (2008 Stormfront)",
+    "costUsd": 45,
+    "outcomeUsd": 54,
+    "clipUrl": "https://gacha.collectorcrypt.com/r/x843qqp9u5vf",
+    "imageUrl": "https://arweave.net/qV6VP12jMylBNzneTRhtcspA9lY13y2jtLqA4o4KBtM"
+  },
+  {
+    "id": "pull-ancient-roar-may20",
+    "date": "2026-05-20",
+    "source": "Collector Crypt",
+    "summary": "Ancient Roar #092 — CGC Gem Mint 9.5 (2023)",
+    "costUsd": 35,
+    "outcomeUsd": 33,
+    "clipUrl": "https://gacha.collectorcrypt.com/r/x843qqp9u5vf",
+    "imageUrl": "https://d1xpxki1g4htqu.cloudfront.net/Nk7lJzLEfQ9BmHnCNJQ4aTDe_1UN4T9_kuR4IGbg2uM"
   }
 ]

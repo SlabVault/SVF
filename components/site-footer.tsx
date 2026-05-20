@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import type { SiteConfig } from "@/types/content";
 import { CopyAddressButton } from "@/components/copy-address-button";
+import { FooterDisclaimer } from "@/components/footer-disclaimer";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 
@@ -122,6 +123,10 @@ export function SiteFooter({ site }: Props) {
             </div>
           </div>
         </div>
+
+        <Separator className="bg-line/80" />
+
+        <FooterDisclaimer />
 
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-xs text-muted/80">Built in public.</p>

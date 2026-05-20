@@ -1,5 +1,7 @@
 "use client";
 
+import { useSyncExternalStore } from "react";
+
 import { Button } from "@/components/ui/button";
 
 type Props = {
@@ -8,8 +10,35 @@ type Props = {
   description?: string;
 };
 
+function getSiteOrigin(): string {
+  return (
+    process.env.NEXT_PUBLIC_SITE_URL?.trim().replace(/\/$/, "") ??
+    "http://localhost:3000"
+  );
+}
+
+function subscribeToOrigin() {
+  return () => {};
+}
+
+function resolveShareUrl(path: string, origin: string): string {
+  if (path.startsWith("http://") || path.startsWith("https://")) return path;
+  const normalized = path.startsWith("/") ? path : `/${path}`;
+  return `${origin}${normalized}`;
+}
+
 export function SocialShare({ url, title }: Props) {
-  const encodedUrl = encodeURIComponent(url);
+  const origin = useSyncExternalStore(
+    subscribeToOrigin,
+    () =>
+      typeof window !== "undefined"
+        ? window.location.origin
+        : getSiteOrigin(),
+    getSiteOrigin,
+  );
+
+  const shareUrl = resolveShareUrl(url, origin);
+  const encodedUrl = encodeURIComponent(shareUrl);
   const encodedTitle = encodeURIComponent(title);
 
   const shareLinks = [
@@ -26,7 +55,7 @@ export function SocialShare({ url, title }: Props) {
     {
       name: "Copy",
       action: () => {
-        navigator.clipboard.writeText(url);
+        void navigator.clipboard.writeText(shareUrl);
       },
       label: "Copy link",
     },

@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 200" fill="none">
+  <rect width="320" height="200" fill="#111827"/>
+  <rect x="24" y="24" width="272" height="152" rx="12" fill="#1f2937" stroke="#f59e0b" stroke-width="2"/>
+  <text x="160" y="108" text-anchor="middle" fill="#fcd34d" font-family="system-ui,sans-serif" font-size="32" font-weight="700">Beezie</text>
+</svg>

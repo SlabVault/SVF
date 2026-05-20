@@ -120,4 +120,6 @@ export type PullItem = {
   costUsd: number | null;
   outcomeUsd: number | null;
   clipUrl: string;
+  /** Optional thumbnail (slab scan or clip still). */
+  imageUrl?: string;
 };

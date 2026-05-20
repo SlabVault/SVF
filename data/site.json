@@ -37,19 +37,19 @@
       "name": "Collector Crypt",
       "priceLabel": "From $25",
       "href": "https://gacha.collectorcrypt.com/r/x843qqp9u5vf",
-      "imageUrl": ""
+      "imageUrl": "/gacha/collector-crypt.svg"
     },
     {
       "name": "Phygitals",
       "priceLabel": "From $20",
       "href": "https://phygitals.com/invite/slabvault",
-      "imageUrl": ""
+      "imageUrl": "/gacha/phygitals.svg"
     },
     {
       "name": "Beezie",
       "priceLabel": "From $15",
       "href": "https://beezie.com/r/O9067G6O",
-      "imageUrl": ""
+      "imageUrl": "/gacha/beezie.svg"
     }
   ],
   "livePull": {

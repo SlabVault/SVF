@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { SlabImage } from "@/components/slab-image";
 import { formatUsd } from "@/lib/format";
+import { normalizeSlabImageSrc } from "@/lib/slab-image-url";
 import type { PullItem } from "@/types/content";
 
 type Props = {
@@ -29,12 +31,24 @@ export function RecentPullsCarousel({ pulls }: Props) {
         {pulls.map((pull) => {
           const fmv =
             pull.outcomeUsd != null ? formatUsd(pull.outcomeUsd) : null;
+          const imageSrc = pull.imageUrl
+            ? normalizeSlabImageSrc(pull.imageUrl)
+            : null;
 
           return (
             <Card
               key={pull.id}
               className="min-w-[min(100%,18rem)] shrink-0 snap-start space-y-3 p-5 transition-[border-color,box-shadow] hover:border-vault-violet/30 hover:shadow-[0_0_28px_-14px_rgba(139,92,246,0.4)] sm:min-w-[16rem]"
             >
+              {imageSrc ? (
+                <div className="overflow-hidden rounded-lg border border-line">
+                  <SlabImage
+                    src={imageSrc}
+                    alt=""
+                    className="aspect-[4/3] w-full"
+                  />
+                </div>
+              ) : null}
               <div className="flex items-start justify-between gap-2">
                 <p className="text-xs font-medium uppercase tracking-wide text-muted">
                   {pull.source}
