@@ -36,6 +36,24 @@ export type MarketplaceListResult = {
   dbHint?: string;
 };
 
+let lastDbErrorFingerprint: string | null = null;
+let lastDbErrorAt = 0;
+
+function logDbErrorOnce(prefix: string, error: unknown) {
+  const message = error instanceof Error ? error.message : String(error);
+  const fingerprint = `${prefix}:${message}`;
+  const now = Date.now();
+  if (
+    lastDbErrorFingerprint === fingerprint &&
+    now - lastDbErrorAt < 30_000
+  ) {
+    return;
+  }
+  lastDbErrorFingerprint = fingerprint;
+  lastDbErrorAt = now;
+  console.error(prefix, error);
+}
+
 function toNumber(value: unknown): number {
   if (value == null) return 0;
   if (typeof value === "number") return value;
@@ -143,6 +161,14 @@ function buildWhere(options?: {
   return where;
 }
 
+function normalizeMarketplaceId(id: string): string {
+  try {
+    return decodeURIComponent(id).trim().toLowerCase();
+  } catch {
+    return id.trim().toLowerCase();
+  }
+}
+
 export async function listMarketplaceSlabs(options?: {
   status?: string;
   grade?: string;
@@ -194,26 +220,28 @@ export async function listMarketplaceSlabs(options?: {
 export async function getMarketplaceSlabById(
   id: string,
 ): Promise<MarketplaceSlab | null> {
+  const normalizedId = normalizeMarketplaceId(id);
+  if (!normalizedId) return null;
+
   if (getDatabaseUrl()) {
-    const dbStatus = await getDatabaseStatus();
-    if (dbStatus.state === "connected") {
-      try {
-        const slab = await prisma.slab.findUnique({
-          where: { id },
-          include: {
-            pricingHistory: {
-              orderBy: { changedAt: "desc" },
-              take: 10,
-            },
+    try {
+      const slab = await prisma.slab.findUnique({
+        where: { id: normalizedId },
+        include: {
+          pricingHistory: {
+            orderBy: { changedAt: "desc" },
+            take: 10,
           },
-        });
-        if (slab) return serializeDbSlab(slab);
-      } catch (error) {
-        console.error("Error fetching slab from DB:", error);
-      }
+        },
+      });
+      if (slab) return serializeDbSlab(slab);
+    } catch (error) {
+      logDbErrorOnce("Error fetching slab from DB:", error);
     }
   }
 
-  const fallback = slabsFromJson().find((s) => s.id === id);
+  const fallback = slabsFromJson().find(
+    (s) => normalizeMarketplaceId(s.id) === normalizedId,
+  );
   return fallback ?? null;
 }

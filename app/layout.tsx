@@ -77,6 +77,7 @@ export default async function RootLayout({
   return (
     <html
       lang="en"
+      data-scroll-behavior="smooth"
       className={`dark ${display.variable} ${sans.variable} h-full scroll-smooth antialiased`}
     >
       <head>
