@@ -6,6 +6,12 @@ const walletStub = path.resolve(__dirname, "lib/wallet-adapters-stub.ts");
 const nextConfig: NextConfig = {
   // Allow LAN / custom host access to dev HMR and /_next/* (see Next 16 allowedDevOrigins)
   allowedDevOrigins: ["192.168.178.120", "192.168.*.*"],
+  async redirects() {
+    return [
+      { source: "/icon", destination: "/icon.png", permanent: false },
+      { source: "/apple-icon", destination: "/apple-icon.png", permanent: false },
+    ];
+  },
   turbopack: {
     resolveAlias: {
       "@solana/wallet-adapter-wallets": walletStub,
