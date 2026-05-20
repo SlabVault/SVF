@@ -10,11 +10,6 @@ export function useLoadedImage(src: string) {
   const [error, setError] = useState(false);
   const imgRef = useRef<HTMLImageElement | null>(null);
 
-  useEffect(() => {
-    setLoaded(false);
-    setError(false);
-  }, [src]);
-
   const syncFromImg = useCallback(() => {
     const img = imgRef.current;
     if (!img) return;
