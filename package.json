@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --webpack",
     "dev:webpack": "next dev --webpack",
     "build": "prisma generate && next build --webpack",
     "postinstall": "prisma generate",
@@ -11,7 +11,8 @@
     "lint": "eslint",
     "sync": "tsx scripts/sync-data.ts",
     "db:push": "prisma db push",
-    "db:seed": "prisma db seed"
+    "db:seed": "prisma db seed",
+    "dev:turbopack": "next dev"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.2",
