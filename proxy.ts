@@ -1,13 +1,14 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { getToken } from "next-auth/jwt";
 import { checkRateLimit } from "@/lib/security";
 
 /**
- * Proxy for rate limiting and security headers.
+ * Proxy for rate limiting, admin session guard, and security headers.
  * Matcher is limited to /api and /admin so /, static assets, and metadata routes
  * (/icon, /favicon.ico, /_next/*) are never intercepted.
  */
-export function proxy(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   try {
     const pathname = request.nextUrl.pathname;
 
@@ -19,6 +20,25 @@ export function proxy(request: NextRequest) {
       pathname.startsWith("/apple-icon")
     ) {
       return NextResponse.next();
+    }
+
+    if (
+      pathname.startsWith("/admin") &&
+      !pathname.startsWith("/admin/login") &&
+      !pathname.startsWith("/api/auth")
+    ) {
+      const token = await getToken({
+        req: request,
+        secret: process.env.NEXTAUTH_SECRET,
+      });
+      if (!token) {
+        const loginUrl = new URL("/admin/login", request.url);
+        loginUrl.searchParams.set(
+          "callbackUrl",
+          `${pathname}${request.nextUrl.search}`,
+        );
+        return NextResponse.redirect(loginUrl);
+      }
     }
 
     const response = NextResponse.next();

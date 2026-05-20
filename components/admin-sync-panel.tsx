@@ -24,7 +24,10 @@ export function AdminSyncPanel({ lastSyncAt }: Props) {
     setLoading(true);
     setStatus(null);
     try {
-      const res = await fetch("/api/sync", { method: "POST" });
+      const res = await fetch("/api/sync", {
+        method: "POST",
+        credentials: "include",
+      });
       const data = (await res.json()) as SyncResponse;
       if (!res.ok) {
         setStatus(data.error ?? "Sync failed");
