@@ -1,8 +1,11 @@
 import type { Metadata } from "next";
 import { DM_Sans, Fraunces } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
+import { BackToTop } from "@/components/back-to-top";
+import { WalletProvider } from "@/components/wallet-provider";
 import { getSiteConfig } from "@/lib/site-config";
 
 const display = Fraunces({
@@ -26,6 +29,7 @@ export const metadata: Metadata = {
   },
   description:
     "Live gacha pulls, graded Pokémon slabs, and a transparent multisig vault. $SVF coordinates treasury growth you can track on-chain.",
+  keywords: ["SlabVaultFi", "SVF", "Pokémon", "slabs", "gacha", "vault", "Solana", "multisig", "treasury", "collectibles"],
   openGraph: {
     type: "website",
     locale: "en_US",
@@ -34,6 +38,14 @@ export const metadata: Metadata = {
     description:
       "Live gacha pulls, graded Pokémon slabs, and a transparent multisig vault.",
     url: "/",
+    images: [
+      {
+        url: "/og.png",
+        width: 1200,
+        height: 630,
+        alt: "SlabVaultFi",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
@@ -42,6 +54,7 @@ export const metadata: Metadata = {
     title: "SlabVaultFi — Community-owned collectible vault",
     description:
       "Live gacha pulls, graded Pokémon slabs, and a transparent multisig vault.",
+    images: ["/og.png"],
   },
   icons: {
     icon: "/favicon.ico",
@@ -60,6 +73,9 @@ export default function RootLayout({
       lang="en"
       className={`dark ${display.variable} ${sans.variable} h-full scroll-smooth antialiased`}
     >
+      <head>
+        <Script src="https://plugin.jup.ag/plugin-v1.js" data-preload defer />
+      </head>
       <body className="min-h-full bg-background text-foreground font-sans">
         <a
           href="#main"
@@ -67,13 +83,16 @@ export default function RootLayout({
         >
           Skip to content
         </a>
-        <div className="flex min-h-full flex-col">
-          <SiteHeader brandName={site.brandName} ticker={site.ticker} />
-          <main id="main" className="flex-1">
-            {children}
-          </main>
-          <SiteFooter site={site} />
-        </div>
+        <WalletProvider>
+          <div className="flex min-h-full flex-col">
+            <SiteHeader brandName={site.brandName} ticker={site.ticker} />
+            <main id="main" className="flex-1">
+              {children}
+            </main>
+            <SiteFooter site={site} />
+          </div>
+        </WalletProvider>
+        <BackToTop />
       </body>
     </html>
   );

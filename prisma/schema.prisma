@@ -1,0 +1,121 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Slab {
+  id                String   @id @default(cuid())
+  name              String
+  grade             String
+  estimatedValueUsd Decimal?
+  acquiredAt        DateTime
+  imageUrl          String
+  vaultedUrl        String
+  collectrUrl       String?
+  status            SlabStatus @default(AVAILABLE)
+  solPrice          Decimal
+  svfPrice          Decimal
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  transactions      Transaction[]
+  pricingHistory    PricingHistory[]
+}
+
+model Transaction {
+  id               String           @id @default(cuid())
+  slabId           String
+  slab             Slab             @relation(fields: [slabId], references: [id])
+  buyerWallet      String
+  solAmount        Decimal
+  svfAmount        Decimal
+  totalUsdValue    Decimal?
+  status           TransactionStatus @default(PENDING)
+  transactionSignature String?
+  burnSignature    String?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  completedAt      DateTime?
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  accounts      Account[]
+  sessions      Session[]
+  walletAddress String?   @unique
+  firstPurchaseAt    DateTime?
+  totalPurchases     Int      @default(0)
+  totalSpentUsd      Decimal  @default(0)
+  createdAt          DateTime @default(now())
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model PricingHistory {
+  id        String   @id @default(cuid())
+  slabId    String
+  slab      Slab     @relation(fields: [slabId], references: [id])
+  solPrice  Decimal
+  svfPrice  Decimal
+  changedAt DateTime @default(now())
+}
+
+enum SlabStatus {
+  AVAILABLE
+  RESERVED
+  SOLD
+  NOT_FOR_SALE
+}
+
+enum TransactionStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
