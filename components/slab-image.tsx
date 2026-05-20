@@ -11,7 +11,7 @@ type Props = {
 };
 
 function SlabImageInner({ src, alt, className, priority = false }: Props) {
-  const { imgRef, loaded, error, onLoad, onError } = useLoadedImage();
+  const { imgRef, loaded, error, onLoad, onError } = useLoadedImage(src);
 
   if (error) {
     return (
