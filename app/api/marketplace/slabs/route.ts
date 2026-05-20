@@ -8,7 +8,7 @@ import { prisma } from "@/lib/prisma";
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
-    const { slabs, fromFallback } = await listMarketplaceSlabs({
+    const { slabs, fromFallback, dbStatus } = await listMarketplaceSlabs({
       status: searchParams.get("status") ?? undefined,
       grade: searchParams.get("grade") ?? undefined,
       minPrice: searchParams.get("minPrice") ?? undefined,
@@ -17,8 +17,11 @@ export async function GET(request: Request) {
 
     return NextResponse.json(slabs, {
       headers: fromFallback
-        ? { "X-Marketplace-Source": "data/slabs.json" }
-        : undefined,
+        ? {
+            "X-Marketplace-Source": "data/slabs.json",
+            "X-Marketplace-Db-Status": dbStatus,
+          }
+        : { "X-Marketplace-Db-Status": dbStatus },
     });
   } catch (error) {
     console.error("Error fetching slabs:", error);

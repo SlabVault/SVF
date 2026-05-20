@@ -16,7 +16,7 @@ Marketing site for [SlabVaultFi](https://github.com/SlabVault/SVF): home, vault 
 |----------|----------|-------------|
 | `NEXT_PUBLIC_SITE_URL` | **Recommended in production** | Canonical site origin for Open Graph, `sitemap.xml`, and `robots.txt` (e.g. `https://slabvault.xyz`). Defaults to `http://localhost:3000`. |
 | `NEXT_PUBLIC_TOKEN_CA` | Optional | Overrides the Solana mint in `data/site.json` for Dexscreener stats. |
-| `DATABASE_URL` | **Required for live checkout** | PostgreSQL connection string. Omit to serve demo listings from `data/slabs.json` (browse-only). |
+| `DATABASE_URL` | **Required for live checkout** | Direct `postgresql://` connection string. Omit to serve demo listings from `data/slabs.json` (browse-only). Do **not** use `prisma+postgres://` for local dev unless you run `npx prisma dev` — use a direct Postgres URL instead. |
 | `NEXT_PUBLIC_SOLANA_RPC` | **Recommended** | Solana RPC URL for wallet connect and checkout (client). Defaults to public mainnet-beta. Use Helius/QuickNode in production. |
 | `SOLANA_RPC_URL` | Optional | Server-side RPC for payment verification. Falls back to `NEXT_PUBLIC_SOLANA_RPC`. |
 | `TREASURY_WALLET_ADDRESS` | Optional | Receives SOL + SVF payments. Default: Squads treasury `2oRZe7z9Jx3rpoUWuidjGhpX9mxxhtps2JqQtdxLfHwg`. |
@@ -24,12 +24,21 @@ Marketing site for [SlabVaultFi](https://github.com/SlabVault/SVF): home, vault 
 | `SVF_TOKEN_MINT` | Optional | $SVF SPL mint. Default: `6ZxRa2CWtAcWKb58RMJABuiUYWu9o4oM76QCyMVLpump`. |
 | `SERVER_WALLET_SECRET` | Optional | Deployer secret key as JSON byte array for future auto-fulfillment. **Never commit.** v1 uses manual admin fulfillment. |
 | `ADMIN_PASSWORD` | Optional | Admin dashboard login (with `NEXTAUTH_SECRET` / `NEXTAUTH_URL`). |
+| `CRON_SECRET` | Optional | Protects `POST /api/sync`. Vercel cron sends `Authorization: Bearer CRON_SECRET` when set. |
 | `NEXTAUTH_SECRET` | Optional | Session signing for admin. |
 | `NEXTAUTH_URL` | Optional | Same origin as the site (e.g. `http://localhost:3000`). |
 
 Copy [`.env.example`](.env.example) to `.env.local` and adjust.
 
 ## Marketplace database
+
+Use a **direct** PostgreSQL URL in `.env` or `.env.local`:
+
+```bash
+DATABASE_URL=postgresql://postgres:password@localhost:5432/slabvault
+```
+
+If your `.env` has a `prisma+postgres://` URL from `prisma init`, replace it with a direct connection or start the local Prisma Postgres server with `npx prisma dev`.
 
 ```bash
 # Apply schema (development)
@@ -67,7 +76,7 @@ npm run db:seed
 npm run sync    # refresh data/slabs.json, pulls.json, site.json from scrapers
 ```
 
-**Admin:** `/admin` includes a **Run sync now** button (POST `/api/sync`) with `lastSyncAt` from `data/site.json`.
+**Admin:** `/admin` includes a **Run sync now** button (POST `/api/sync`, requires admin session or `CRON_SECRET`) with `lastSyncAt` from `data/site.json`.
 
 Local preview: [http://localhost:3000](http://localhost:3000).
 
