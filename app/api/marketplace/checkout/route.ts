@@ -54,6 +54,7 @@ export async function POST(request: Request) {
         totalSpentUsd: { increment: transaction.totalUsdValue || 0 },
       },
       create: {
+        email: `${transaction.buyerWallet}@wallet.slabvaultfi.local`,
         walletAddress: transaction.buyerWallet,
         firstPurchaseAt: new Date(),
         totalPurchases: 1,

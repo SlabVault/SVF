@@ -7,5 +7,14 @@
     "costUsd": 50,
     "outcomeUsd": 57,
     "clipUrl": "https://gacha.collectorcrypt.com/?replay=cc-2daf7f1c-8553-437f-a57d-de42baf15abd"
+  },
+  {
+    "id": "example-2",
+    "date": "2026-05-2",
+    "source": "Collector Crypt",
+    "summary": "Psyduck #175 PSA 10 2023 ",
+    "costUsd": 50,
+    "outcomeUsd": 75,
+    "clipUrl": "https://gacha.collectorcrypt.com/?replay=cc-a26c4d20-2702-4261-bd7a-853f68f2b3c7"
   }
 ]

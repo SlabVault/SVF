@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useId, useState } from "react";
 
 import { Button } from "@/components/ui/button";
+import { INTERNAL_NAV } from "@/lib/nav";
 import { cn } from "@/lib/utils";
 
 type NavItem = { href: string; label: string };
@@ -12,7 +13,7 @@ type NavItem = { href: string; label: string };
 type Props = {
   brandName: string;
   ticker: string;
-  items: readonly NavItem[];
+  items?: readonly NavItem[];
 };
 
 function navLinkClass(active: boolean) {
@@ -22,7 +23,11 @@ function navLinkClass(active: boolean) {
   );
 }
 
-export function SiteNav({ brandName, ticker, items }: Props) {
+export function SiteNav({
+  brandName,
+  ticker,
+  items = INTERNAL_NAV,
+}: Props) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const panelId = useId();

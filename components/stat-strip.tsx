@@ -18,11 +18,11 @@ function Stat({
   value: string;
 }) {
   return (
-    <Card variant="stat" className="p-4 transition-[border-color] hover:border-vault-violet/30">
-      <p className="text-xs font-medium uppercase tracking-wide text-muted">
+    <Card variant="stat" className="group p-4 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-vault-violet/20 bg-gradient-to-br from-vault-panel/50 to-vault-deep/50 hover:border-vault-violet/30">
+      <p className="text-xs font-medium uppercase tracking-wide text-muted group-hover:text-vault-amber transition-colors duration-300">
         {label}
       </p>
-      <p className="mt-2 font-mono text-lg font-semibold text-foreground">{value}</p>
+      <p className="mt-2 font-mono text-lg font-semibold text-foreground group-hover:text-vault-amber transition-colors duration-300">{value}</p>
     </Card>
   );
 }
@@ -65,7 +65,7 @@ export function StatStrip({
           </Link>
         </div>
       </div>
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+      <div className="flex gap-3 overflow-x-auto pb-2 sm:grid sm:grid-cols-2 lg:grid-cols-5 sm:overflow-visible sm:pb-0">
         <Stat label="$SVF price (USD)" value={price} />
         <Stat label="Pair liquidity (USD)" value={liq} />
         <Stat label="24h volume (USD)" value={vol} />

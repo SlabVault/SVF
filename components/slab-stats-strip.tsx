@@ -23,24 +23,24 @@ export function SlabStatsStrip({ slabs }: Props) {
       : `${valueCount}/${slabs.length} slabs include an estimate`;
 
   return (
-    <div className="grid gap-3 sm:grid-cols-3">
-      <Card variant="stat" className="p-4 transition-[border-color] hover:border-vault-violet/30">
-        <p className="text-xs font-medium uppercase tracking-wide text-muted">
+    <div className="grid gap-4 sm:grid-cols-3">
+      <Card variant="stat" className="group p-5 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-vault-violet/20 bg-gradient-to-br from-vault-panel/50 to-vault-deep/50">
+        <p className="text-xs font-medium uppercase tracking-wide text-muted group-hover:text-vault-amber transition-colors duration-300">
           Slabs listed
         </p>
-        <p className="mt-2 font-mono text-2xl font-semibold">{slabs.length}</p>
+        <p className="mt-2 font-mono text-3xl font-semibold text-foreground group-hover:text-vault-amber transition-colors duration-300">{slabs.length}</p>
       </Card>
-      <Card variant="stat" className="p-4 transition-[border-color] hover:border-vault-violet/30">
-        <p className="text-xs font-medium uppercase tracking-wide text-muted">
+      <Card variant="stat" className="group p-5 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-vault-violet/20 bg-gradient-to-br from-vault-panel/50 to-vault-deep/50">
+        <p className="text-xs font-medium uppercase tracking-wide text-muted group-hover:text-vault-amber transition-colors duration-300">
           With images
         </p>
-        <p className="mt-2 font-mono text-2xl font-semibold">{withImage}</p>
+        <p className="mt-2 font-mono text-3xl font-semibold text-foreground group-hover:text-vault-amber transition-colors duration-300">{withImage}</p>
       </Card>
-      <Card variant="stat" className="p-4 transition-[border-color] hover:border-vault-violet/30">
-        <p className="text-xs font-medium uppercase tracking-wide text-muted">
+      <Card variant="stat" className="group p-5 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-vault-violet/20 bg-gradient-to-br from-vault-panel/50 to-vault-deep/50">
+        <p className="text-xs font-medium uppercase tracking-wide text-muted group-hover:text-vault-amber transition-colors duration-300">
           Est. value tracked (USD)
         </p>
-        <p className="mt-2 font-mono text-2xl font-semibold">{totalValue}</p>
+        <p className="mt-2 font-mono text-3xl font-semibold text-foreground group-hover:text-vault-amber transition-colors duration-300">{totalValue}</p>
         <p className="mt-1 text-xs text-muted">{valueNote}</p>
       </Card>
     </div>

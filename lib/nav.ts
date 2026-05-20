@@ -1,5 +1,5 @@
-/** Full primary header navigation (flat, all visible on desktop). */
-export const PRIMARY_NAV = [
+/** Flat header navigation — all routes visible on desktop and mobile menu. */
+export const INTERNAL_NAV = [
   { href: "/", label: "Home" },
   { href: "/vault", label: "Vault" },
   { href: "/pulls", label: "Pulls" },
@@ -11,10 +11,11 @@ export const PRIMARY_NAV = [
   { href: "/community", label: "Community" },
 ] as const;
 
-/** @deprecated Use PRIMARY_NAV — kept for imports that still reference MORE_NAV */
-export const MORE_NAV = [] as const;
+/** @deprecated Use INTERNAL_NAV */
+export const PRIMARY_NAV = INTERNAL_NAV;
 
-export const INTERNAL_NAV = PRIMARY_NAV;
+/** @deprecated Dropdown removed — all links are in INTERNAL_NAV */
+export const MORE_NAV = [] as const;
 
 export const ADMIN_NAV = [
   { href: "/admin", label: "Admin Dashboard" },

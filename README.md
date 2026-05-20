@@ -16,13 +16,16 @@ Marketing site for [SlabVaultFi](https://github.com/SlabVault/SVF): home, vault 
 |----------|----------|-------------|
 | `NEXT_PUBLIC_SITE_URL` | **Recommended in production** | Canonical site origin for Open Graph, `sitemap.xml`, and `robots.txt` (e.g. `https://www.slabvaultfi.com`). Defaults to `http://localhost:3000`. |
 | `NEXT_PUBLIC_TOKEN_CA` | Optional | Overrides the Solana mint in `data/site.json` for Dexscreener stats. |
+| `SOLANA_RPC_URL` | Optional | Solana RPC provider URL for wallet queries and data sync. Defaults to public mainnet-beta RPC. Recommended: Helius, QuickNode, or similar for production. |
+| `DATABASE_URL` | **Required for marketplace** | PostgreSQL connection string for marketplace database. Use Supabase, Railway, or similar. |
 
 ## Open Graph and Twitter images
 
-- [`app/opengraph-image.tsx`](app/opengraph-image.tsx) — dynamic Open Graph image (1200×630) via the Next.js App Router file convention (`/opengraph-image`).
-- [`app/twitter-image.tsx`](app/twitter-image.tsx) — dynamic Twitter large card (`/twitter-image`).
+- [`public/og.png`](public/og.png) — static 1200×630 brand backdrop used in root `metadata` (`openGraph.images` / `twitter.images`) for reliable unfurls.
+- [`app/opengraph-image.tsx`](app/opengraph-image.tsx) — optional dynamic Open Graph route (`/opengraph-image`) with richer typography.
+- [`app/twitter-image.tsx`](app/twitter-image.tsx) — optional dynamic Twitter route (`/twitter-image`).
 
-Root `metadata` sets titles, descriptions, and your X handle; Next wires the dynamic image routes automatically. If you want an extra **static** 1200×630 file for non-Next tools, add `public/og.png` yourself and extend `metadata.openGraph.images` / `metadata.twitter.images` in [`app/layout.tsx`](app/layout.tsx).
+Replace `public/og.png` with your own artwork anytime (keep 1200×630 for best card compatibility).
 
 ## Scripts
 

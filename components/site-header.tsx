@@ -2,7 +2,7 @@ import Link from "next/link";
 
 import { SiteNav } from "@/components/site-nav";
 import { WalletButton } from "@/components/wallet-button";
-import { PRIMARY_NAV } from "@/lib/nav";
+import { INTERNAL_NAV } from "@/lib/nav";
 import { cn } from "@/lib/utils";
 
 type Props = {
@@ -32,7 +32,7 @@ export function SiteHeader({ brandName, ticker }: Props) {
           </span>
         </Link>
         <div className="flex min-w-0 flex-1 items-center justify-end gap-2 sm:gap-3">
-          <SiteNav brandName={brandName} ticker={ticker} items={PRIMARY_NAV} />
+          <SiteNav brandName={brandName} ticker={ticker} items={INTERNAL_NAV} />
           <div className="shrink-0">
             <WalletButton />
           </div>
