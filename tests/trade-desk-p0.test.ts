@@ -10,7 +10,7 @@ import {
   type CollectionBidRow,
 } from "@/lib/trade/collection-bids";
 import { parseCertPrefixQuery } from "@/lib/trade/parse-cert-prefix-query";
-import { extractCertNumber } from "@/lib/trade/resolve-listing";
+import { extractCertNumber } from "@/lib/trade/extract-cert-number";
 import type { TradeListing } from "@/lib/trade-listings";
 
 const ROOT = process.cwd();
@@ -141,6 +141,28 @@ test("P0 nft-card gates grid Buy without seller/listState", () => {
   );
   assert.match(card, /disabled=\{buyDisabled\}/);
   assert.match(card, /title=\{buyTitle\}/);
+});
+
+test("P0 item detail maps seller/listState for on-chain buy CTA", () => {
+  const client = read("components/trade/trade-item-detail-client.tsx");
+  const mapper = read("components/trade/tensor/map-listing.ts");
+  const buyHook = read("components/trade/tensor/use-tensor-buy.ts");
+
+  assert.match(client, /mapTradeListingToTensorNft/);
+  assert.match(client, /tradeListingHasOnChainBuyMetadata/);
+  assert.match(client, /resolveOnChainBuyBlockReason/);
+  assert.match(client, /canBuyOnChain\(nft, listing, collection\.slug\)/);
+  assert.match(client, /await buy\(nft, collection\.slug\)/);
+  assert.match(client, /showOnChainBuyCta/);
+  assert.match(client, /blockedOnChainBuy/);
+  assert.match(client, /title=\{onChainBlockReason \?\? undefined\}/);
+  assert.match(client, /listing\.sellerWallet/);
+  assert.match(client, /listing\.listState/);
+  assert.match(mapper, /seller: listing\.sellerWallet/);
+  assert.match(mapper, /listState: listing\.listState/);
+  assert.match(buyHook, /nft\.listing\.seller/);
+  assert.match(buyHook, /nft\.listing\.listState/);
+  assert.match(buyHook, /buildTensorBuyTxSearchParams/);
 });
 
 test("M0 registry: beezie + courtyard preview collections with chain field", () => {

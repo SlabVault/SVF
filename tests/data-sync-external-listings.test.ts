@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import {
+  buildExternalListingsDbOperatorHints,
+  buildSyncOperatorHints,
   formatExternalListingsSyncFailure,
   formatExternalListingsSyncWarnings,
   syncExternalListings,
@@ -133,4 +135,77 @@ test("syncExternalListings formats partial upstream failures", async () => {
   assert.equal(diagnostics[DISCOVER_KEY]?.lastStatus, "failure");
   assert.match(diagnostics[DISCOVER_KEY]?.detail ?? "", /warnings:/);
   assert.match(diagnostics[DISCOVER_KEY]?.detail ?? "", /\(cached\)/);
+});
+
+test("buildExternalListingsDbOperatorHints suggests db:preflight:warn when upserts are zero", async () => {
+  await withTemporaryEnv({ DATABASE_URL: "postgresql://example" }, () => {
+    const hints = buildExternalListingsDbOperatorHints({
+      lastAttemptAt: TIMESTAMP,
+      dbUpsertCount: 0,
+      upsertErrors: [],
+    });
+
+    assert.equal(hints.length, 1);
+    assert.match(hints[0], /db:preflight:warn/);
+    assert.match(hints[0], /dbUpsertCount=0/);
+    assert.match(hints[0], /prisma generate|prisma\+postgres/i);
+  });
+});
+
+test("buildExternalListingsDbOperatorHints surfaces upsert errors", async () => {
+  await withTemporaryEnv({ DATABASE_URL: "postgresql://example" }, () => {
+    const hints = buildExternalListingsDbOperatorHints({
+      lastAttemptAt: TIMESTAMP,
+      dbUpsertCount: 0,
+      upsertErrors: ["External listing DB upsert failed unexpectedly."],
+    });
+
+    assert.equal(hints.length, 1);
+    assert.match(hints[0], /upsert errors:/);
+    assert.match(hints[0], /db:preflight:warn/);
+  });
+});
+
+test("buildExternalListingsDbOperatorHints empty when DATABASE_URL unset", async () => {
+  await withTemporaryEnv({ DATABASE_URL: undefined }, () => {
+    const hints = buildExternalListingsDbOperatorHints({
+      lastAttemptAt: TIMESTAMP,
+      dbUpsertCount: 0,
+      upsertErrors: [],
+    });
+
+    assert.deepEqual(hints, []);
+  });
+});
+
+test("buildSyncOperatorHints merges db upsert remediation", async () => {
+  await withTemporaryEnv({ DATABASE_URL: "postgresql://example" }, () => {
+    const hints = buildSyncOperatorHints(
+      [
+        {
+          key: DISCOVER_KEY,
+          source: "discover",
+          category: "slabs",
+          label: "GRAILS partner listings (sync:discover)",
+          status: "success",
+          lastAttemptAt: TIMESTAMP,
+          lastSuccessAt: TIMESTAMP,
+          ageMinutes: 5,
+          isStale: false,
+          detail: "CC 4; Phygitals 2; total 6",
+        },
+      ],
+      120,
+      {
+        lastAttemptAt: TIMESTAMP,
+        dbUpsertCount: 0,
+        upsertErrors: [],
+      },
+    );
+
+    assert.equal(
+      hints.some((hint) => hint.includes("db:preflight:warn")),
+      true,
+    );
+  });
 });

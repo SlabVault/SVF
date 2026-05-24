@@ -7,6 +7,7 @@ import {
   isPrismaProxyDatabaseUrl,
 } from "@/lib/db-connection";
 import { getExternalListingSeedStats } from "@/lib/external-listings";
+import { PHYGITALS_LIVE_INGEST_AVAILABLE } from "@/lib/phygitals-listings";
 import { getRecentOperatorFailures, type OperatorFailure } from "@/lib/operator-diagnostics";
 import { inspectSchemaHealth } from "@/lib/schema-health";
 import { isReserveWalletChallengeRequired } from "@/lib/wallet-challenge";
@@ -133,10 +134,21 @@ function summarizeChecks(checks: OpsCheck[]): string[] {
   return pointers;
 }
 
-function formatCcIngestSourceSuffix(
+function formatPhygitalsIngestModeLabel(): string {
+  return PHYGITALS_LIVE_INGEST_AVAILABLE
+    ? "Phygitals ingest: live"
+    : "Phygitals ingest: seed-only (live API unavailable)";
+}
+
+function formatPartnerIngestLegSuffix(
   ccIngestSource: ExternalListingsDbSyncLeg["ccIngestSource"],
 ): string {
-  return ccIngestSource ? ` CC ingest: ${ccIngestSource}.` : "";
+  const parts: string[] = [];
+  if (ccIngestSource) {
+    parts.push(`CC ingest: ${ccIngestSource}`);
+  }
+  parts.push(formatPhygitalsIngestModeLabel());
+  return parts.length > 0 ? ` ${parts.join("; ")}.` : "";
 }
 
 async function buildExternalListingsDbSyncCheck(
@@ -182,7 +194,7 @@ async function buildExternalListingsDbSyncCheck(
     return {
       ...base,
       status: "warn",
-      detail: `Postgres upsert leg unhealthy (${parts.join("; ")}). Last attempt ${leg.lastAttemptAt}.${formatCcIngestSourceSuffix(leg.ccIngestSource)}`,
+      detail: `Postgres upsert leg unhealthy (${parts.join("; ")}). Last attempt ${leg.lastAttemptAt}.${formatPartnerIngestLegSuffix(leg.ccIngestSource)}`,
       remediation:
         "Verify DATABASE_URL, run npm run db:preflight, then npm run sync:discover. Check ExternalListing migration.",
     };
@@ -304,9 +316,10 @@ export async function getAdminOpsStatus(): Promise<AdminOpsStatus> {
         label: "External listings seed",
         status: !hasSeed ? "warn" : staleRatio > 0.5 ? "warn" : "pass",
         detail: hasSeed
-          ? `${seed.activeCount} active JSON rows (${seed.staleCount} stale). Newest indexed ${seed.newestIndexedAt ?? "unknown"}.`
-          : "data/external-listings.json has no active rows.",
-        remediation: "Run npm run sync:discover to refresh Collector Crypt inventory.",
+          ? `${seed.activeCount} active JSON rows (${seed.staleCount} stale). Newest indexed ${seed.newestIndexedAt ?? "unknown"}. ${formatPhygitalsIngestModeLabel()}.`
+          : `data/external-listings.json has no active rows. ${formatPhygitalsIngestModeLabel()}.`,
+        remediation:
+          "Run npm run sync:discover to refresh Collector Crypt inventory. Phygitals rows are manual seed-only until partner API ships.",
       };
     })(),
     externalListingsDbSyncCheck,

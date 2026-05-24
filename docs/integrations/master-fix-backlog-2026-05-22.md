@@ -533,3 +533,72 @@ No wiring regressions found. Primary marketing nav stays vault-first (trade via 
 | Date | Note |
 |------|------|
 | 2026-05-23 | Master UI pass — buy/deep-link hierarchy, aggregate desk crawl OK, portfolio loading fallback |
+
+---
+
+## Master Dev — resume after credits
+
+**Date:** 2026-05-24  
+**Agent:** grails-master-dev (inline, 0 spawns)
+
+### Workspace note
+
+Prior run aborted on `cursor/plan-build-verify` (minimal tree). Full GRAILS verify uses checkpoint **`4543995`** on `cursor/restore-full-nav-marketplace` (or equivalent reflog). Commits **`f6f0542` / `3bf2dab`** on `plan-build-verify` dropped ~466 files (including `scripts/run-tests.ts`) — do not verify there until restored.
+
+### Verify
+
+| Gate | Result |
+|------|--------|
+| `npm run test` @ `4543995` | **618 pass / 0 fail** |
+| Focused (partner + sync + map-listing + desk-p0) | **89 pass / 0 fail** |
+| `npm run build` @ `4543995` (after `npm run clean:next`) | **PASS** |
+| `npm run sync:discover` | JSON **6** rows (CC 3 + Phy 3); **DB upsert 0** (Prisma proxy unreachable) |
+
+### Ingest / sync (code-truth)
+
+| Path | Order / behavior | Status |
+|------|------------------|--------|
+| `aggregatePartnerExternalListings` | Postgres → partner API (when stale) → live scrape fallback only → DAS → Tensor enrichment last | Unchanged — matches docs |
+| `fetchCollectorCryptIngestListings` (sync) | API first, scrape fallback | Unchanged |
+| `shouldUseLiveScrapeFallback` | Not default on SSR; env/`?live=1` + stale/empty only | Covered by tests |
+
+### Deep links + buy honesty
+
+| Surface | Wiring |
+|---------|--------|
+| `resolvePartnerDeepLink` | Cert `?q=` when generic CC marketplace URL; gacha/item URLs preserved |
+| `resolveOnChainBuyBlockReason` | `map-listing.ts`; used in `nft-card`, `buy-now-modal`, `trade-item-detail-client` |
+| Grid buy | Partner `Buy ↗` when no on-chain metadata; disabled on-chain BUY with block tooltip |
+
+### Listing counts (`sync:discover`)
+
+| Metric | Value |
+|--------|-------|
+| CC rows written | 3 |
+| Phygitals rows | 3 |
+| Total JSON | 6 |
+| CC ingest source | `cached` (API returned empty; retained seed) |
+| DB upsert | **0** — `DATABASE_URL=prisma+postgres://…` without `npx prisma dev` |
+
+### DB setup (operator)
+
+1. **Recommended:** `DATABASE_URL=postgresql://user:pass@host:5432/dbname` then `npm run db:preflight:warn` → `npm run sync:discover` (expect `DB upsert count > 0`).
+2. **Prisma proxy:** keep `prisma+postgres://` and run `npx prisma dev` in a second terminal before sync/preflight.
+3. Dev without DB: `isPrismaProxyJsonSeedMode()` serves JSON with `dbStatus: unconfigured` — desks still show 6 seed listings.
+
+### Fixes applied this pass
+
+None (verify-only). **Blocker:** unstable branch checkout during aborted session; reset to `4543995` for green verify.
+
+### M3 buy test — what’s next
+
+1. **Data:** Seed or upsert one row with `sellerWallet` + `listState` (Tensor enrichment or ops seed) on a non–`partner_site` collection.
+2. **Ops:** Broker fee PDA + [trade-staging-checklist.md](../trade-staging-checklist.md) steps 1–5; `TENSOR_TRADE_WRITE_ENABLED` only on staging.
+3. **Wallet:** Small mainnet-beta fill via `GET /api/trade/tx/buy?writePath=sdk` — record in [staging-first-fill-record-template.md](./staging-first-fill-record-template.md).
+4. **Until then:** Browse + partner deep-link checkout remain the honest path (`canBuyOnChain` false without metadata).
+
+### Changelog
+
+| Date | Note |
+|------|------|
+| 2026-05-24 | Master Dev resume after credits — 618 tests green @ 4543995; sync JSON 6 / DB 0; build pass after clean:next |

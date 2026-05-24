@@ -111,7 +111,7 @@ const COLLECTION_TABS: { id: CollectionDeskTab; label: string; soon?: boolean }[
   { id: "info", label: "INFO" },
   { id: "activity", label: "ACTIVITY" },
   { id: "bids", label: "BIDS" },
-  { id: "orders", label: "ORDERS" },
+  { id: "orders", label: "ORDERS", soon: true },
   { id: "traits", label: "TRAITS" },
   { id: "holders", label: "HODLERS" },
   { id: "collection_bid", label: "COLLECTION BID", soon: true },
@@ -507,10 +507,15 @@ function TradeCollectionDeskClientInner({
         <CollectionTraitsPanel listings={filteredListings} />
       ) : activeTab === "holders" ? (
         <CollectionHoldersPanel collectionSlug={collection.slug} />
-      ) : activeTab === "bids" || activeTab === "collection_bid" ? (
+      ) : activeTab === "bids" ? (
         <CollectionBidsPanel
           collectionSlug={collection.slug}
           className="trade-collection-bids-tab"
+        />
+      ) : activeTab === "collection_bid" ? (
+        <EmptyState
+          title="Collection bid pools (Soon)"
+          description="Place and manage collection-wide bid pools with SOL deposit, max quantity, and price delta. Open market bids are on the BIDS tab."
         />
       ) : null}
     </TradeDeskShell>

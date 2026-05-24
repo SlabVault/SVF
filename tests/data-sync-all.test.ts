@@ -1,9 +1,10 @@
 import assert from "node:assert/strict";
-import { readFile, writeFile } from "fs/promises";
+import { readFile } from "fs/promises";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
 import test from "node:test";
 
+import { atomicWriteFile } from "@/lib/atomic-file";
 import { syncAllData } from "@/lib/data-sync";
 import type { SyncExternalListingsResult } from "@/lib/external-listings-sync";
 
@@ -33,7 +34,7 @@ async function withPreservedSiteJson<R>(run: () => Promise<R> | R): Promise<R> {
   try {
     return await run();
   } finally {
-    await writeFile(SITE_PATH, before, "utf-8");
+    await atomicWriteFile(SITE_PATH, before);
   }
 }
 
@@ -117,4 +118,28 @@ test("syncAllData marks discover failure when partner sync errors", async () => 
     assert.match(discover.detail, /CC 0/);
     assert.match(discover.detail, /total 0/);
   });
+});
+
+test("syncAllData operatorHints mention db:preflight:warn when db configured with zero upserts", async () => {
+  const previousDatabaseUrl = process.env.DATABASE_URL;
+  process.env.DATABASE_URL = "postgresql://example";
+
+  try {
+    await withPreservedSiteJson(async () => {
+      const result = await syncAllData({
+        skipUpstreamSync: true,
+        externalSyncToJson: async () =>
+          mockExternalSyncResult({ dbConfigured: true, dbUpsertCount: 0 }),
+      });
+
+      assert.ok(
+        result.operatorHints.some((hint) => hint.includes("db:preflight:warn")),
+      );
+      assert.ok(
+        result.operatorHints.some((hint) => hint.includes("dbUpsertCount=0")),
+      );
+    });
+  } finally {
+    process.env.DATABASE_URL = previousDatabaseUrl;
+  }
 });

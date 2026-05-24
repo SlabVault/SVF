@@ -8,6 +8,7 @@ import {
 import {
   buildExternalListingId,
   computeStaleAfter,
+  describeExternalListingDbUpsertSkip,
   normalizeExternalListingInput,
   upsertExternalListings,
   type UpsertExternalListingInput,
@@ -159,7 +160,15 @@ export async function syncExternalListingsToJson(): Promise<SyncExternalListings
   const activeForDb = merged.filter((row) => row.status === "active");
   if (dbConfigured && activeForDb.length > 0) {
     try {
-      dbUpsertCount = await syncDeps.upsertExternalListings(activeForDb);
+      const upsertOutcome = await syncDeps.upsertExternalListings(activeForDb);
+      dbUpsertCount = upsertOutcome.count;
+      if (dbUpsertCount === 0) {
+        const blockedReason =
+          upsertOutcome.blockedReason ??
+          describeExternalListingDbUpsertSkip() ??
+          `External listing DB upsert wrote 0 rows for ${activeForDb.length} active listing(s). Verify DATABASE_URL and Postgres connectivity.`;
+        errors.push(blockedReason);
+      }
     } catch (error) {
       errors.push(
         error instanceof Error

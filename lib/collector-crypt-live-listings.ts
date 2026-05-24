@@ -4,7 +4,12 @@
  */
 
 import siteJson from "@/data/site.json";
-import { fetchCollectorCryptApiListings } from "@/lib/collector-crypt-api-listings";
+import {
+  __setCollectorCryptApiListingsForTests,
+  fetchCollectorCryptApiListings,
+} from "@/lib/collector-crypt-api-listings";
+
+export { __setCollectorCryptApiListingsForTests };
 import type { UpsertExternalListingInput } from "@/lib/external-listings";
 import * as collectorCryptScraper from "@/lib/scrapers/collector-crypt-scraper";
 import { SCRAPER_TIMEOUT_MS } from "@/lib/scrapers/scraper-utils";
@@ -12,13 +17,9 @@ import { SCRAPER_TIMEOUT_MS } from "@/lib/scrapers/scraper-utils";
 export type CollectorCryptIngestSource = "api" | "scrape" | "none";
 
 type ScrapeCollectorCryptSlabs = typeof collectorCryptScraper.scrapeCollectorCryptSlabs;
-type FetchCollectorCryptApiListings = typeof fetchCollectorCryptApiListings;
 
 let scrapeCollectorCryptSlabsImpl: ScrapeCollectorCryptSlabs =
   collectorCryptScraper.scrapeCollectorCryptSlabs.bind(collectorCryptScraper);
-
-let fetchCollectorCryptApiListingsImpl: FetchCollectorCryptApiListings =
-  fetchCollectorCryptApiListings;
 
 export function __setCollectorCryptScrapeForTests(
   replacement: ScrapeCollectorCryptSlabs | null,
@@ -26,14 +27,6 @@ export function __setCollectorCryptScrapeForTests(
   scrapeCollectorCryptSlabsImpl = replacement
     ? replacement
     : collectorCryptScraper.scrapeCollectorCryptSlabs.bind(collectorCryptScraper);
-}
-
-export function __setCollectorCryptApiListingsForTests(
-  replacement: FetchCollectorCryptApiListings | null,
-): void {
-  fetchCollectorCryptApiListingsImpl = replacement
-    ? replacement
-    : fetchCollectorCryptApiListings;
 }
 
 /** HTTP timeout plus parsing headroom for multi-account discover sync. */
@@ -122,7 +115,7 @@ export async function fetchCollectorCryptIngestListings(): Promise<{
   source: CollectorCryptIngestSource;
 }> {
   try {
-    const apiListings = await fetchCollectorCryptApiListingsImpl();
+    const apiListings = await fetchCollectorCryptApiListings();
     if (apiListings.length > 0) {
       return { listings: apiListings, source: "api" };
     }

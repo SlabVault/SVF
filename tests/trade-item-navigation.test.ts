@@ -142,6 +142,23 @@ test("M2 item page COMPARE tab: alternateVenueAsks venue compare strip", () => {
   assert.match(client, /venueCompareSummary/);
   assert.match(client, /Buy on GRAILS/);
   assert.match(client, /activeTab === "compare"/);
+  assert.match(
+    client,
+    /function resolveVenuePartnerCheckoutUrl[\s\S]*resolvePartnerDeepLink\(/,
+  );
+  assert.match(
+    client,
+    /function ItemVenueCompareStrip[\s\S]*resolveVenuePartnerCheckoutUrl\(listing, row\)/,
+  );
+  assert.match(
+    client,
+    /function ItemVenueCompareStrip[\s\S]*data-growth-event="cta_trade_partner_deep_link"/,
+  );
+  assert.match(
+    client,
+    /function ItemVenueCompareStrip[\s\S]*data-growth-context=\{`trade_compare_partner:\$\{listing\.id\}:\$\{row\.partner\}`\}/,
+  );
+  assert.match(client, /function ItemVenueCompareStrip[\s\S]*site ↗/);
   assert.match(venueCompare, /buildVenueCompareRows/);
   assert.match(venueCompare, /alternateVenueAsks/);
 });

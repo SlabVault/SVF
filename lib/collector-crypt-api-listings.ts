@@ -115,8 +115,9 @@ async function fetchAccountApiListings(
   return [];
 }
 
-/** Partner API read path for CC — empty when no stable marketplace API responds. */
-export async function fetchCollectorCryptApiListings(): Promise<
+type FetchCollectorCryptApiListingsFn = () => Promise<UpsertExternalListingInput[]>;
+
+async function fetchCollectorCryptApiListingsLive(): Promise<
   UpsertExternalListingInput[]
 > {
   const accounts = siteJson.collectorCryptAccounts ?? [];
@@ -133,4 +134,23 @@ export async function fetchCollectorCryptApiListings(): Promise<
   }
 
   return listings;
+}
+
+let fetchCollectorCryptApiListingsOverride: FetchCollectorCryptApiListingsFn | null =
+  null;
+
+export function __setCollectorCryptApiListingsForTests(
+  replacement: FetchCollectorCryptApiListingsFn | null,
+): void {
+  fetchCollectorCryptApiListingsOverride = replacement;
+}
+
+/** Partner API read path for CC — empty when no stable marketplace API responds. */
+export async function fetchCollectorCryptApiListings(): Promise<
+  UpsertExternalListingInput[]
+> {
+  if (fetchCollectorCryptApiListingsOverride) {
+    return fetchCollectorCryptApiListingsOverride();
+  }
+  return fetchCollectorCryptApiListingsLive();
 }

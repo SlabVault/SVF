@@ -14,10 +14,11 @@ import { PlatformBadge } from "@/components/platform-badge";
 import { TradeDeskShell } from "@/components/trade/trade-desk-shell";
 import { TradeMobileActionBar } from "@/components/trade/trade-mobile-action-bar";
 import {
+  mapTradeListingToTensorNft,
   resolveOnChainBuyBlockReason,
   tradeListingHasOnChainBuyMetadata,
 } from "@/components/trade/tensor/map-listing";
-import { resolvesOnChainSettlement } from "@/components/trade/tensor/use-tensor-buy";
+import { resolvesOnChainSettlement, useTensorBuy } from "@/components/trade/tensor/use-tensor-buy";
 import {
   resolveTradeListingPartnerCheckoutUrl,
   tradeListingShowsPartnerBuyLink,
@@ -418,11 +419,16 @@ export function TradeItemDetailClient({
   const [offerOpen, setOfferOpen] = useState(false);
   const [listOpen, setListOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<ItemTab>("overview");
+  const { buy, pending, canBuyOnChain } = useTensorBuy();
 
   const partnerBadge = PARTNER_BADGE[collection.partner];
   const venuePartner = resolveListingVenuePartner(listing, collection.slug);
   const traits = traitRows(listing);
   const listedUsd = formatListedAskUsd(listing.askSol, solPriceUsd);
+  const nft = useMemo(
+    () => mapTradeListingToTensorNft(listing, collection.slug),
+    [listing, collection.slug],
+  );
   const onChainMint = resolveTradeListingMint(listing) ?? listing.id;
 
   const onChainSettlement = resolvesOnChainSettlement(listing, collection.slug);
@@ -453,10 +459,19 @@ export function TradeItemDetailClient({
   const activityEvents =
     itemActivity.length > 0 ? itemActivity : activity.events.slice(0, 12);
 
-  const openBuy = () => {
+  const openBuy = async () => {
     if (!connected) {
       setVisible(true);
       return;
+    }
+    if (canBuyOnChain(nft, listing, collection.slug)) {
+      try {
+        await buy(nft, collection.slug);
+        return;
+      } catch {
+        setBuyOpen(true);
+        return;
+      }
     }
     setBuyOpen(true);
   };
@@ -544,11 +559,16 @@ export function TradeItemDetailClient({
                   <Button
                     type="button"
                     className="tensor-btn-primary h-9 w-full text-xs font-bold uppercase tracking-wide"
-                    onClick={openBuy}
+                    disabled={pending}
+                    onClick={() => void openBuy()}
                     data-growth-event="cta_trade_buy_now"
                     data-growth-context={`trade_item:${listing.id}`}
                   >
-                    {connected ? "BUY NOW" : "Connect wallet to buy"}
+                    {pending
+                      ? "Signing…"
+                      : connected
+                        ? "BUY NOW"
+                        : "Connect wallet to buy"}
                   </Button>
                 ) : partnerPrimaryCheckout && partnerCheckoutUrl ? (
                   <Button
@@ -705,7 +725,7 @@ export function TradeItemDetailClient({
         priceSol={listing.askSol}
         connected={connected}
         onConnect={() => setVisible(true)}
-        onBuy={openBuy}
+        onBuy={() => void openBuy()}
         onList={openList}
         suggestedListPriceSol={collectionStats.floorSol ?? listing.askSol}
         listingId={listing.id}

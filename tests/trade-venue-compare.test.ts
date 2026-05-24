@@ -1,8 +1,16 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import path from "node:path";
 import test from "node:test";
 
 import { buildVenueCompareRows } from "@/lib/trade/venue-compare";
 import type { TradeListing } from "@/lib/trade-listings";
+
+const ROOT = process.cwd();
+
+function read(relPath: string) {
+  return readFileSync(path.join(ROOT, relPath), "utf8");
+}
 
 function listing(
   overrides: Partial<TradeListing> & Pick<TradeListing, "partner" | "askSol" | "collectionId">,
@@ -57,4 +65,26 @@ test("buildVenueCompareRows returns single row when no alternates", () => {
 
   assert.equal(rows.length, 1);
   assert.equal(rows[0]?.partner, "collector_crypt");
+});
+
+test("ItemVenueCompareStrip partner rows use resolvePartnerDeepLink checkout URLs", () => {
+  const client = read("components/trade/trade-item-detail-client.tsx");
+
+  assert.match(
+    client,
+    /function resolveVenuePartnerCheckoutUrl[\s\S]*slugToPartnerPlatform\(row\.collectionId\)[\s\S]*resolvePartnerDeepLink\(/,
+  );
+  assert.match(
+    client,
+    /function ItemVenueCompareStrip[\s\S]*const partnerUrl = resolveVenuePartnerCheckoutUrl\(listing, row\)/,
+  );
+  assert.match(
+    client,
+    /function ItemVenueCompareStrip[\s\S]*partnerUrl \? \([\s\S]*data-growth-event="cta_trade_partner_deep_link"/,
+  );
+  assert.match(
+    client,
+    /function ItemVenueCompareStrip[\s\S]*\{VENUE_LABELS\[row\.partner as TradePartnerId\] \?\? row\.partner\} site ↗/,
+  );
+  assert.doesNotMatch(client, /\{ id: "compare", label: "COMPARE", soon: true \}/);
 });

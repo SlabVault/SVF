@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
+import { useWalletModal } from "@solana/wallet-adapter-react-ui";
 
 import { BuyNowModal } from "@/components/trade/buy-now-modal";
 import { PlaceOfferModal } from "@/components/trade/place-offer-modal";
@@ -39,7 +40,7 @@ function gateTitle(writeEnabled: boolean, connected: boolean, extra?: string): s
 
 /**
  * Ported from vendor/marketplace-nextjs-template/web/components/ui/NftCard.tsx
- * Buy uses /api/trade/tx/buy when seller metadata exists; otherwise opens modal.
+ * Buy opens BuyNowModal for price breakdown and write gates before on-chain attempt.
  */
 export function TensorNftCard({ nft, listing, collectionSlug, priority = false }: Props) {
   const { name, imageUri, askSol, rank } = nft;
@@ -48,8 +49,9 @@ export function TensorNftCard({ nft, listing, collectionSlug, priority = false }
   const [buyOpen, setBuyOpen] = useState(false);
   const [offerOpen, setOfferOpen] = useState(false);
   const { connected } = useWallet();
+  const { setVisible } = useWalletModal();
   const writeEnabled = isTradeWriteEnabledClient();
-  const { buy, pending, canBuyOnChain } = useTensorBuy();
+  const { pending, canBuyOnChain } = useTensorBuy();
   const onChainSettlement = resolvesOnChainSettlement(listing, collectionSlug);
   const listed = nft.listing.price != null;
   const onChainBlockReason = resolveOnChainBuyBlockReason(listing, onChainSettlement);
@@ -61,21 +63,21 @@ export function TensorNftCard({ nft, listing, collectionSlug, priority = false }
     !onChainBuy &&
     Boolean(partnerCheckoutUrl) &&
     tradeListingShowsPartnerBuyLink(listing, collectionSlug);
-  const buyDisabled =
-    !writeEnabled || !connected || pending || missingOnChainSellerMeta;
+  const buyDisabled = !writeEnabled || pending || missingOnChainSellerMeta;
   const buyTitle = gateTitle(writeEnabled, connected, onChainBlockReason ?? undefined);
+  const alternateAsks = listing.alternateVenueAsks ?? [];
+  const hasAlternateVenues = alternateAsks.length >= 1;
+  const bestAlternateAskSol = hasAlternateVenues
+    ? Math.min(...alternateAsks.map((alt) => alt.askSol))
+    : null;
+  const compareHref = `${href}&tab=compare`;
 
-  const handleBuy = async () => {
-    if (buyDisabled) return;
-    if (canBuyOnChain(nft, listing, collectionSlug)) {
-      try {
-        await buy(nft, collectionSlug);
-        return;
-      } catch {
-        setBuyOpen(true);
-        return;
-      }
+  const handleBuy = () => {
+    if (!connected) {
+      setVisible(true);
+      return;
     }
+    if (buyDisabled) return;
     setBuyOpen(true);
   };
 
@@ -113,7 +115,21 @@ export function TensorNftCard({ nft, listing, collectionSlug, priority = false }
       </h2>
 
       <div className="mt-1 space-y-1 px-0.5 pb-0.5">
-        <p className="font-mono text-sm font-bold tabular-nums leading-none">{askSol} ◎</p>
+        <div className="flex flex-wrap items-center gap-1">
+          <p className="font-mono text-sm font-bold tabular-nums leading-none">{askSol} ◎</p>
+          {hasAlternateVenues && bestAlternateAskSol != null ? (
+            <Link
+              href={compareHref}
+              className="rounded border border-[#641ae6]/35 bg-[#641ae6]/10 px-1 py-px font-mono text-[9px] font-semibold tabular-nums text-[#641ae6] hover:bg-[#641ae6]/20"
+              title={`Compare ${alternateAsks.length + 1} venue asks`}
+              data-growth-event="trade_listing_compare_chip"
+              data-growth-context={`trade_compare:${listing.id}`}
+            >
+              +{alternateAsks.length} venue{alternateAsks.length > 1 ? "s" : ""} ·{" "}
+              {bestAlternateAskSol} ◎
+            </Link>
+          ) : null}
+        </div>
 
         {nft.listing.price != null ? (
           <div className="grid grid-cols-2 gap-1">
@@ -134,7 +150,7 @@ export function TensorNftCard({ nft, listing, collectionSlug, priority = false }
                 className="tensor-btn-primary h-6 text-[9px] disabled:cursor-not-allowed disabled:opacity-60"
                 disabled={buyDisabled}
                 title={buyTitle}
-                onClick={() => void handleBuy()}
+                onClick={handleBuy}
               >
                 {pending ? "…" : "Buy"}
               </button>

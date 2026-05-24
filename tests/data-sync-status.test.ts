@@ -117,6 +117,36 @@ test("getSyncStatus includes external-listings:discover in sourceStatuses", asyn
   assert.ok(Array.isArray(status.operatorHints));
 });
 
+test("getSyncStatus operatorHints mention db:preflight:warn when db upserts are zero", async () => {
+  const previousDatabaseUrl = process.env.DATABASE_URL;
+  process.env.DATABASE_URL = "postgresql://example";
+
+  try {
+    await withPreservedSiteJson(async () => {
+      const site = {
+        lastExternalListingsDbUpsertCount: 0,
+        lastExternalListingsSyncErrors: [],
+        syncDiagnostics: {
+          [DISCOVER_KEY]: {
+            lastAttemptAt: "2026-05-22T10:00:00.000Z",
+            lastSuccessAt: "2026-05-22T10:00:00.000Z",
+            lastStatus: "success",
+            detail: "CC 4; Phygitals 2; total 6",
+          },
+        },
+      };
+      await writeFile(SITE_PATH, JSON.stringify(site, null, 2), "utf-8");
+
+      const status = await getSyncStatus();
+      assert.ok(
+        status.operatorHints.some((hint) => hint.includes("db:preflight:warn")),
+      );
+    });
+  } finally {
+    process.env.DATABASE_URL = previousDatabaseUrl;
+  }
+});
+
 test("sync GET status payload includes external-listings:discover", async () => {
   await withTemporaryEnv({ CRON_SECRET: "cron-secret" }, async () => {
     const request = new Request("http://localhost/api/sync", {

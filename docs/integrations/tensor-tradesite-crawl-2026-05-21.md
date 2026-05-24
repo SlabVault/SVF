@@ -439,6 +439,23 @@ Browser MCP: tensor.trade `/`, `/trade/solana_monkey_business`; GRAILS `localhos
 
 ---
 
+## Orchestrator crawl pass — 2026-05-24 (UI lane, M5 compare + M3 buy prep)
+
+Browser MCP: [tensor.trade/trade/solana_monkey_business](https://www.tensor.trade/trade/solana_monkey_business). Code audit: item COMPARE strip live; nav cert compare Soon honest for M5.
+
+| Region audited | Gap found | Action |
+|----------------|-----------|--------|
+| Item COMPARE strip | Partner row links lacked growth attrs | **Inline** — `trade-item-detail-client.tsx` |
+| Collection ORDERS tab | Soon label on live `CollectionOrdersPanel` | **Inline** — removed `soon: true` |
+| Buy flow (item + grid) | Modal bypass when write enabled | **Yes** — ui-bg-24-1, ui-bg-24-4 |
+| Grid tiles | No `alternateVenueAsks` chip | **Yes** — ui-bg-24-3 |
+| COLLECTION BID tab | Soon on shared bids panel | **Yes** — ui-bg-24-5 |
+| Compare deep links | Test coverage gap | **Yes** — ui-bg-24-2 |
+
+**Global cap:** 10/24 after spawn (5 on-chain + 5 ui).
+
+---
+
 ## Orchestrator crawl pass — 2026-05-22 (UI lane, iteration 3)
 
 Browser MCP re-crawl: `/`, `/trade/solana_monkey_business`, `/item/{mint}`. Global cap **19/24** before spawn → **5 ui workers** (ui-bg-6..10).

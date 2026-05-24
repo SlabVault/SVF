@@ -9,6 +9,7 @@ import { getExternalListingsDbSyncLeg } from "../lib/data-sync";
 import { jsonError } from "../lib/api-errors";
 import { setPrismaClientHasBundledQueryEngineForTests } from "../lib/db-connection";
 import { getRecentOperatorFailures } from "../lib/operator-diagnostics";
+import { getPhygitalsIngestMode } from "../lib/partner-ingest-adapter";
 import { schemaHealthNonBlockingQueryResults, withMockedQueryRaw } from "./helpers/prisma-test-utils";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -90,6 +91,12 @@ test("getAdminOpsStatus includes env checks and remediation pointers", async () 
       status.checks.some((check) => check.key === "external-listings-db-sync"),
       true,
     );
+    const seedCheck = status.checks.find(
+      (check) => check.key === "external-listings-seed",
+    );
+    assert.ok(seedCheck);
+    assert.match(seedCheck.detail, /Phygitals ingest: seed-only \(live API unavailable\)/);
+    assert.equal(getPhygitalsIngestMode(), "seed-only");
     assert.ok(status.remediationPointers.length >= 1);
   } finally {
     process.env.DATABASE_URL = previousValues.DATABASE_URL;
@@ -224,6 +231,7 @@ test("getAdminOpsStatus warns when DATABASE_URL set but dbUpsertCount is zero", 
       assert.ok(dbSync);
       assert.equal(dbSync.status, "warn");
       assert.match(dbSync.detail, /dbUpsertCount=0/);
+      assert.match(dbSync.detail, /Phygitals ingest: seed-only \(live API unavailable\)/);
     });
   } finally {
     process.env.DATABASE_URL = previousDatabaseUrl;
@@ -306,6 +314,7 @@ test("getAdminOpsStatus passes when DATABASE_URL set and last db upsert succeede
       assert.equal(dbSync.status, "pass");
       assert.match(dbSync.detail, /upserted 8 ExternalListing row/);
       assert.match(dbSync.detail, /CC ingest: api/);
+      assert.match(dbSync.detail, /Phygitals ingest: seed-only \(live API unavailable\)/);
     });
   } finally {
     process.env.DATABASE_URL = previousDatabaseUrl;

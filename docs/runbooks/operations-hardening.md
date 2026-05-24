@@ -77,11 +77,12 @@ Production/staging: Vercel cron `POST /api/sync` every 30 minutes (`vercel.json`
 
 | Step | Command / route |
 |------|-----------------|
+| Preflight (when `DATABASE_URL` set) | `npm run db:preflight:warn` — then `npm run db:preflight` before prod upsert (P0-DAT-04) |
 | Local JSON refresh | `npm run sync:discover` |
 | Staging/prod cron | `POST /api/sync` with `Authorization: Bearer CRON_SECRET` |
 | Apply schema | `npm run db:push` or `npx prisma migrate deploy` |
 
-Phygitals has **no live API** — seed rows in `data/external-listings.json` are refreshed on each sync (indexedAt bump). Collector Crypt rows come from the treasury account scrape when upstream is reachable.
+Phygitals has **no live API** (`PHYGITALS_LIVE_INGEST_AVAILABLE=false`) — seed rows in `data/external-listings.json` are refreshed on each sync (indexedAt bump). Collector Crypt batch ingest is **API-first** (`fetchCollectorCryptIngestListings`), with HTML scrape fallback when API returns no rows.
 
 Optional: `TENSOR_API_KEY` adds 24h volume/Δ on `/trade` landing when configured.
 

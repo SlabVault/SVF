@@ -243,8 +243,9 @@ test("listExternalListings falls back when database probe is unreachable", async
 
 test("upsertExternalListings returns 0 without throwing when DATABASE_URL is unset", async () => {
   await withTemporaryEnv({ DATABASE_URL: undefined }, async () => {
-    const count = await upsertExternalListings([sampleUpsertInput]);
-    assert.equal(count, 0);
+    const result = await upsertExternalListings([sampleUpsertInput]);
+    assert.equal(result.count, 0);
+    assert.equal(result.blockedReason, undefined);
   });
 });
 
@@ -252,8 +253,12 @@ test("upsertExternalListings returns 0 without throwing for unsupported DATABASE
   await withTemporaryEnv(
     { DATABASE_URL: "mysql://user:pass@localhost:3306/db" },
     async () => {
-      const count = await upsertExternalListings([sampleUpsertInput]);
-      assert.equal(count, 0);
+      const result = await upsertExternalListings([sampleUpsertInput]);
+      assert.equal(result.count, 0);
+      assert.match(
+        result.blockedReason ?? "",
+        /protocol is not supported|write gate/,
+      );
     },
   );
 });

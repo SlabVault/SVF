@@ -1,6 +1,10 @@
 import assert from "node:assert/strict";
-import { test } from "node:test";
+import { afterEach, test } from "node:test";
 
+import {
+  __setCollectorCryptApiListingsForTests,
+  __setCollectorCryptScrapeForTests,
+} from "@/lib/collector-crypt-live-listings";
 import { getTradeCollectionBySlug } from "@/lib/onchain/collections";
 import { resolveTradeListingMint } from "@/lib/trade-listings";
 import { withTemporaryEnv } from "./helpers/test-helpers";
@@ -64,6 +68,27 @@ const phygitalsSampleListing: ExternalListingItem = {
   status: "active",
   indexedAt: "2026-05-22T22:46:57.629Z",
   staleAfter: "2026-05-23T22:46:57.629Z",
+};
+
+afterEach(() => {
+  __setCollectorCryptApiListingsForTests(null);
+  __setCollectorCryptScrapeForTests(null);
+});
+
+const ccApiListing = {
+  source: "collector_crypt" as const,
+  externalId: "cc-api-request-1",
+  deepLinkUrl: "https://collectorcrypt.com/marketplace",
+  title: "API Card",
+  grade: "PSA 10",
+  grader: "PSA" as const,
+  priceUsd: 50,
+  priceSol: null,
+  currency: "USD" as const,
+  imageUrl: "https://example.com/a.png",
+  cardName: "API Card",
+  fmvUsd: 45,
+  status: "active" as const,
 };
 
 test("parsePartnerPlatformParam accepts slug aliases", () => {
@@ -245,6 +270,46 @@ test("getPartnerListingSources documents ingest catalog and env flags", async ()
       assert.equal(sources.find((row) => row.id === "cc_scraper")?.configured, true);
       assert.equal(sources.find((row) => row.id === "helius_das")?.configured, true);
       assert.equal(sources.find((row) => row.id === "tensor_api")?.configured, true);
+    },
+  );
+});
+
+test("listPartnerTradeListings prefers CC API and skips live scrape on request path", async () => {
+  let apiCalled = false;
+  let scrapeCalled = false;
+
+  __setCollectorCryptApiListingsForTests(async () => {
+    apiCalled = true;
+    return [ccApiListing];
+  });
+  __setCollectorCryptScrapeForTests(async () => {
+    scrapeCalled = true;
+    return [];
+  });
+
+  await withTemporaryEnv(
+    {
+      DATABASE_URL: undefined,
+      HELIUS_API_KEY: undefined,
+      TENSOR_API_KEY: undefined,
+      PARTNER_LIVE_SCRAPE_ENABLED: "true",
+    },
+    async () => {
+      const collection = getTradeCollectionBySlug("collector-crypt");
+      assert.ok(collection);
+
+      const result = await listPartnerTradeListings(collection, {
+        includeLiveScrape: true,
+      });
+
+      assert.equal(apiCalled, true);
+      assert.equal(scrapeCalled, false);
+      assert.ok(result.sources.includes("partner_api"));
+      assert.equal(result.sources.includes("cc_scraper"), false);
+      assert.ok(
+        result.listings.some((row) => row.name.includes("API Card")),
+        "expected API listing on trade desk",
+      );
     },
   );
 });

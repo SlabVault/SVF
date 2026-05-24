@@ -1,5 +1,6 @@
 import externalListingsJson from "@/data/external-listings.json";
 import {
+  databaseUrlProtocolRemediation,
   getDatabaseStatus,
   getDatabaseUrl,
   isSupportedDatabaseUrl,
@@ -318,16 +319,40 @@ export function normalizeExternalListingInput(
   };
 }
 
-export async function upsertExternalListings(
-  inputs: UpsertExternalListingInput[],
-): Promise<number> {
-  if (inputs.length === 0) return 0;
+export type UpsertExternalListingsResult = {
+  count: number;
+  blockedReason?: string;
+};
 
+/** Operator-facing reason when sync configured DB but upsert wrote zero rows. */
+export function describeExternalListingDbUpsertSkip(): string | null {
   const databaseUrl = getDatabaseUrl();
-  if (!databaseUrl) return 0;
+  if (!databaseUrl) return null;
 
   if (shouldSkipDatabaseWrites()) {
-    return 0;
+    return `External listing DB upsert skipped (write gate): ${databaseUrlProtocolRemediation(databaseUrl)}`;
+  }
+
+  if (!isSupportedDatabaseUrl(databaseUrl)) {
+    return `External listing DB upsert skipped: ${UNSUPPORTED_DATABASE_URL_HINT}`;
+  }
+
+  return null;
+}
+
+export async function upsertExternalListings(
+  inputs: UpsertExternalListingInput[],
+): Promise<UpsertExternalListingsResult> {
+  if (inputs.length === 0) return { count: 0 };
+
+  const databaseUrl = getDatabaseUrl();
+  if (!databaseUrl) return { count: 0 };
+
+  if (shouldSkipDatabaseWrites()) {
+    return {
+      count: 0,
+      blockedReason: describeExternalListingDbUpsertSkip() ?? undefined,
+    };
   }
 
   if (!isSupportedDatabaseUrl(databaseUrl)) {
@@ -335,7 +360,10 @@ export async function upsertExternalListings(
       "External listings DB upsert skipped (unsupported DATABASE_URL protocol):",
       databaseUrl,
     );
-    return 0;
+    return {
+      count: 0,
+      blockedReason: describeExternalListingDbUpsertSkip() ?? undefined,
+    };
   }
 
   let count = 0;
@@ -389,8 +417,13 @@ export async function upsertExternalListings(
       });
       count += 1;
     }
+    return { count };
   } catch (error) {
     logDbErrorOnce("External listings DB upsert failed:", error);
+    const message = error instanceof Error ? error.message : String(error);
+    return {
+      count: 0,
+      blockedReason: `External listing DB upsert failed: ${message}. Verify DATABASE_URL connectivity and run \`npm run db:push\`.`,
+    };
   }
-  return count;
 }

@@ -22,6 +22,8 @@ import {
 } from "@/lib/phygitals-listings";
 import type { ExternalListingItem } from "@/types/external-listing";
 
+import { withTemporaryEnv } from "./helpers/test-helpers";
+
 afterEach(() => {
   __setExternalListingsSyncDepsForTests(null);
   __setCollectorCryptApiListingsForTests(null);
@@ -228,7 +230,7 @@ test("syncExternalListingsToJson reports cc ingest source and db diagnostics", a
     readExistingListings: async () => [phyRow],
     writeListings: async () => {},
     getDatabaseUrl: () => "postgresql://localhost:5432/test",
-    upsertExternalListings: async (rows) => rows.length,
+    upsertExternalListings: async (rows) => ({ count: rows.length }),
   });
 
   const result = await syncExternalListingsToJson();
@@ -340,7 +342,9 @@ test("syncExternalListingsToJson upserts active rows when DATABASE_URL is set", 
     getDatabaseUrl: () => "postgresql://localhost:5432/test",
     upsertExternalListings: async (rows) => {
       upserted = rows;
-      return rows.filter((row) => row.status === "active").length;
+      return {
+        count: rows.filter((row) => row.status === "active").length,
+      };
     },
   });
 
@@ -377,7 +381,7 @@ test("syncExternalListingsToJson excludes sold and unknown rows from DB upsert b
     getDatabaseUrl: () => "postgresql://localhost:5432/test",
     upsertExternalListings: async (rows) => {
       upserted = rows;
-      return rows.length;
+      return { count: rows.length };
     },
   });
 
@@ -415,4 +419,52 @@ test("syncExternalListingsToJson fails when CC scrape errors and seed is empty",
   assert.equal(result.collectorCryptCount, 0);
   assert.equal(result.totalWritten, 0);
   assert.equal(result.errors.length, 1);
+});
+
+test("syncExternalListingsToJson surfaces blocked DB upsert remediation in errors", async () => {
+  __setExternalListingsSyncDepsForTests({
+    fetchCollectorCryptIngestListings: async () => ({ listings: [], source: "none" }),
+    readExistingListings: async () => [phyRow],
+    writeListings: async () => {},
+    getDatabaseUrl: () => "postgresql://localhost:5432/test",
+    upsertExternalListings: async () => ({
+      count: 0,
+      blockedReason:
+        "External listing DB upsert skipped (write gate): Use prisma+postgres:// with `npx prisma dev`.",
+    }),
+  });
+
+  const result = await syncExternalListingsToJson();
+
+  assert.equal(result.dbConfigured, true);
+  assert.equal(result.dbUpsertCount, 0);
+  assert.equal(result.phygitalsCount, 1);
+  assert.equal(result.errors.length, 1);
+  assert.match(result.errors[0] ?? "", /write gate/);
+  assert.match(result.errors[0] ?? "", /prisma\+postgres:\/\//);
+});
+
+test("syncExternalListingsToJson reports DB upsert skip for unsupported DATABASE_URL protocol", async () => {
+  await withTemporaryEnv(
+    { DATABASE_URL: "mysql://user:pass@localhost:3306/db" },
+    async () => {
+      __setExternalListingsSyncDepsForTests({
+        fetchCollectorCryptIngestListings: async () => ({ listings: [], source: "none" }),
+        readExistingListings: async () => [phyRow],
+        writeListings: async () => {},
+      });
+
+      const result = await syncExternalListingsToJson();
+
+      assert.equal(result.dbConfigured, true);
+      assert.equal(result.dbUpsertCount, 0);
+      assert.equal(result.phygitalsCount, 1);
+      assert.ok(result.errors.some((msg) => /upsert skipped/i.test(msg)));
+      assert.ok(
+        result.errors.some((msg) =>
+          /postgresql:\/\/|prisma\+postgres:\/\//i.test(msg),
+        ),
+      );
+    },
+  );
 });

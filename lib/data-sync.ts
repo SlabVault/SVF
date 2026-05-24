@@ -4,6 +4,7 @@ import { join } from "path";
 import pullsJson from "@/data/pulls.json";
 import siteJson from "@/data/site.json";
 import slabsJson from "@/data/slabs.json";
+import { atomicWriteFile } from "@/lib/atomic-file";
 import type { CollectorCryptPull } from "@/lib/scrapers/collector-crypt-scraper";
 import {
   collectorCryptPullStableId,
@@ -19,6 +20,10 @@ import * as solanaWallet from "@/lib/solana-wallet";
 import type { VollectorSlab } from "@/lib/scrapers/vollector-scraper";
 import * as vollectorScraper from "@/lib/scrapers/vollector-scraper";
 import * as vaultedScraper from "@/lib/scrapers/vaulted-scraper";
+import {
+  databaseUrlProtocolRemediation,
+  getDatabaseUrl,
+} from "@/lib/db-connection";
 
 const VOLLECTOR_PROFILE_URL = "https://vollector.id/u/SlabVaultFi";
 const VAULTED_PROFILE_URL = "https://vaulted.id/u/SlabVaultFi";
@@ -242,6 +247,40 @@ function parseDbUpsertCountFromDetail(detail: string): number | null {
 function isUpsertRelatedSyncError(message: string): boolean {
   return /upsert|external listing db/i.test(message);
 }
+
+export type ExternalListingsDbOperatorHintLeg = Pick<
+  ExternalListingsDbSyncLeg,
+  "dbUpsertCount" | "upsertErrors" | "lastAttemptAt"
+>;
+
+/** Operator hints when DATABASE_URL is set but discover upsert wrote zero rows or failed. */
+export function buildExternalListingsDbOperatorHints(
+  leg: ExternalListingsDbOperatorHintLeg | null | undefined,
+  databaseUrl: string | null = getDatabaseUrl(),
+): string[] {
+  if (!databaseUrl || !leg?.lastAttemptAt) {
+    return [];
+  }
+
+  const zeroUpserts = leg.dbUpsertCount === 0 || leg.dbUpsertCount === null;
+  const hasUpsertErrors = leg.upsertErrors.length > 0;
+  if (!zeroUpserts && !hasUpsertErrors) {
+    return [];
+  }
+
+  const parts: string[] = [];
+  if (zeroUpserts) {
+    parts.push(`dbUpsertCount=${leg.dbUpsertCount ?? 0}`);
+  }
+  if (hasUpsertErrors) {
+    parts.push(`upsert errors: ${leg.upsertErrors.join("; ")}`);
+  }
+
+  const protocolRemediation = databaseUrlProtocolRemediation(databaseUrl);
+  return [
+    `GRAILS partner listings Postgres upsert leg unhealthy (${parts.join("; ")}). Run npm run db:preflight:warn, then npm run sync:discover. ${protocolRemediation}`,
+  ];
+}
 const DEFAULT_EXTERNAL_LISTINGS_MAX_ATTEMPTS = 3;
 const EXTERNAL_LISTINGS_RETRY_BASE_MS = 400;
 
@@ -394,12 +433,20 @@ export function evaluateSyncSourceStatuses(
 export function buildSyncOperatorHints(
   sourceStatuses: SyncSourceStatus[],
   staleThresholdMinutes: number = DEFAULT_STALE_MINUTES,
+  externalListingsDbLeg?: ExternalListingsDbOperatorHintLeg | null,
+  databaseUrl: string | null = getDatabaseUrl(),
 ): string[] {
   if (sourceStatuses.length === 0) {
     return ["No sync diagnostics recorded yet. Run npm run sync to initialize."];
   }
 
   const hints = new Set<string>();
+  for (const hint of buildExternalListingsDbOperatorHints(
+    externalListingsDbLeg,
+    databaseUrl,
+  )) {
+    hints.add(hint);
+  }
   for (const status of sourceStatuses) {
     if (status.status === "failure" && status.lastSuccessAt) {
       const cachedAge =
@@ -764,7 +811,7 @@ export async function syncAllData(
       result.pullsUpdated ||
       result.walletDataUpdated ||
       result.externalListingsUpdated;
-    await writeFile(sitePath, JSON.stringify(nextSite, null, 2), "utf-8");
+    await atomicWriteFile(sitePath, JSON.stringify(nextSite, null, 2));
 
     result.sourceStatuses = evaluateSyncSourceStatuses(
       sourceDiagnostics,
@@ -777,6 +824,11 @@ export async function syncAllData(
     result.operatorHints = buildSyncOperatorHints(
       result.sourceStatuses,
       staleThresholdMinutes,
+      {
+        dbUpsertCount: externalResult.dbUpsertCount,
+        upsertErrors: externalResult.errors.filter(isUpsertRelatedSyncError),
+        lastAttemptAt: result.timestamp,
+      },
     );
     result.degraded =
       !result.success ||
@@ -1182,6 +1234,7 @@ export async function getSyncStatus(): Promise<SyncStatusSnapshot> {
   const staleSources = sourceStatuses
     .filter((status) => status.status !== "unknown" && status.isStale)
     .map((status) => status.key);
+  const externalListingsDbLeg = await getExternalListingsDbSyncLeg();
 
   return {
     lastSync: site.lastSyncAt ?? site.lastWalletSync ?? null,
@@ -1195,6 +1248,10 @@ export async function getSyncStatus(): Promise<SyncStatusSnapshot> {
         (status.status === "success" && status.isStale),
     ),
     sourceStatuses,
-    operatorHints: buildSyncOperatorHints(sourceStatuses, staleThresholdMinutes),
+    operatorHints: buildSyncOperatorHints(
+      sourceStatuses,
+      staleThresholdMinutes,
+      externalListingsDbLeg,
+    ),
   };
 }

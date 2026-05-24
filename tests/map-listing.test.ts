@@ -37,6 +37,28 @@ test("mapTradeListingToTensorNft resolves mint from solscan vaultedUrl when id i
   assert.equal(nft.mint, ON_CHAIN_MINT);
   assert.equal(nft.certOrMint, "12345678");
   assert.equal(nft.listing.seller, listing.sellerWallet);
+  assert.equal(nft.owner, listing.sellerWallet);
+  assert.equal(nft.listing.listState, "");
+});
+
+test("mapTradeListingToTensorNft propagates listState when sellerWallet is absent", () => {
+  const listState = "ListStatePda1111111111111111111111111111111111";
+  const listing = certListing({ sellerWallet: undefined, listState });
+  const nft = mapTradeListingToTensorNft(listing, "collector-crypt-pokemon");
+
+  assert.equal(nft.listing.listState, listState);
+  assert.equal(nft.listing.seller, "");
+  assert.equal(nft.owner, "");
+});
+
+test("mapTradeListingToTensorNft maps sellerWallet to nft.listing.seller and owner", () => {
+  const seller = "SellerWallet1111111111111111111111111111111111111";
+  const listing = certListing({ sellerWallet: seller, listState: undefined });
+  const nft = mapTradeListingToTensorNft(listing, "collector-crypt-pokemon");
+
+  assert.equal(nft.listing.seller, seller);
+  assert.equal(nft.owner, seller);
+  assert.equal(nft.listing.listState, "");
 });
 
 test("mapTradeListingToTensorNft uses listing id when it is already a Solana mint", () => {

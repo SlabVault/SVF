@@ -16,10 +16,18 @@ import {
   type PartnerPlatformParam,
   type PartnerTradeListingsResult,
 } from "@/lib/partner-listings";
+import { PHYGITALS_LIVE_INGEST_AVAILABLE } from "@/lib/phygitals-listings";
 import type {
   TradeCollectionStats,
   TradeListing,
 } from "@/lib/trade-listings";
+
+/** Honest Phygitals ingest leg — live API gated until partner API ships. */
+export type PhygitalsIngestMode = "seed-only" | "live";
+
+export function getPhygitalsIngestMode(): PhygitalsIngestMode {
+  return PHYGITALS_LIVE_INGEST_AVAILABLE ? "live" : "seed-only";
+}
 
 export type PartnerSettlementMode =
   | "on_chain_tensor"
@@ -122,7 +130,10 @@ export const phygitalsIngestAdapter: PartnerIngestAdapter = {
     (PHYGITALS_COLLECTION?.settlementMode as PartnerSettlementMode) ??
     "on_chain_tensor",
   async fetchListings(options) {
-    return ingestResultFromTradeResult(await fetchPhygitalsPartnerIngest(options));
+    return {
+      ...ingestResultFromTradeResult(await fetchPhygitalsPartnerIngest(options)),
+      ingestMode: getPhygitalsIngestMode(),
+    };
   },
   async fetchStats(options) {
     const result = await fetchPhygitalsPartnerIngest(options);
