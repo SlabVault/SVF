@@ -1,22 +1,5 @@
 import { Card } from "@/components/ui/card";
-
-const STEPS = [
-  {
-    step: "01",
-    title: "Creator fees",
-    body: "$SVF trading fees flow into the community treasury — funding the next pull without diluting holders.",
-  },
-  {
-    step: "02",
-    title: "Live gacha",
-    body: "Treasury SOL goes to graded pack pulls on Collector Crypt, Phygitals, Beezie, and more — streamed for transparency.",
-  },
-  {
-    step: "03",
-    title: "Vault & multisig",
-    body: "Hits land in the multisig vault. Track slabs on Vaulted and Collectr; verify treasury moves on Squads.",
-  },
-] as const;
+import { TRADE_HOW_IT_WORKS_STEPS } from "@/lib/trade-landing";
 
 export function HowItWorks() {
   return (
@@ -26,20 +9,27 @@ export function HowItWorks() {
     >
       <div className="mx-auto max-w-6xl space-y-10">
         <div className="max-w-2xl">
-          <h2 id="how-it-works-heading" className="font-heading text-2xl font-bold tracking-tight sm:text-3xl">
-            How it works
+          <h2
+            id="how-it-works-heading"
+            className="font-heading text-2xl font-bold tracking-tight sm:text-3xl"
+          >
+            How the aggregator works
           </h2>
           <p className="mt-2 text-muted">
-            From on-chain fees to physical slabs — every step is public.
+            One desk for graded-card liquidity — from browse to on-chain fill.
           </p>
         </div>
 
         <ol className="grid gap-6 md:grid-cols-3">
-          {STEPS.map((item) => (
+          {TRADE_HOW_IT_WORKS_STEPS.map((item) => (
             <li key={item.step}>
               <Card className="h-full space-y-4 border-line/80 bg-vault-deep/60 p-6 transition-[border-color,box-shadow] hover:border-vault-violet/30">
-                <span className="font-mono text-sm font-semibold text-vault-amber">{item.step}</span>
-                <h3 className="font-heading text-xl font-semibold text-foreground">{item.title}</h3>
+                <span className="font-mono text-sm font-semibold text-vault-amber">
+                  {item.step}
+                </span>
+                <h3 className="font-heading text-xl font-semibold text-foreground">
+                  {item.title}
+                </h3>
                 <p className="text-sm leading-relaxed text-muted">{item.body}</p>
               </Card>
             </li>

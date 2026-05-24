@@ -2,17 +2,17 @@ import type { Metadata } from "next";
 import { Card } from "@/components/ui/card";
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { JupiterWidget } from "@/components/jupiter-widget";
+import { LinkButton } from "@/components/link-button";
 import { getSiteConfig } from "@/lib/site-config";
+import { buildPageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildPageMetadata({
   title: "$SVF",
-  description: "Trade $SVF on Jupiter aggregator with the best rates on Solana.",
-  openGraph: {
-    title: "$SVF — SlabVaultFi",
-    description: "Trade $SVF on Jupiter aggregator with the best rates on Solana.",
-    url: "/svf",
-  },
-};
+  description:
+    "Trade $SVF on Jupiter and review contract + treasury references before participating.",
+  path: "/svf",
+  keywords: ["buy SVF", "SVF token", "Solana token"],
+});
 
 export default function SvfPage() {
   const site = getSiteConfig();
@@ -73,6 +73,32 @@ export default function SvfPage() {
           </Card>
         </div>
       </section>
+
+      <Card className="space-y-4 border-line bg-vault-panel/50 p-6">
+        <h2 className="font-display text-2xl font-semibold">Verify before you trade</h2>
+        <p className="text-sm text-muted">
+          SlabVaultFi does not promise token returns. Use contract and treasury references to confirm
+          authenticity before each trade.
+        </p>
+        <div className="flex flex-wrap gap-3">
+          <LinkButton
+            href="/vault/proof"
+            variant="secondary"
+            trackingEvent="cta_open_proof_from_svf"
+            trackingContext="svf_verify_panel"
+          >
+            View proof of reserves
+          </LinkButton>
+          <LinkButton
+            href="/faq"
+            variant="ghost"
+            trackingEvent="cta_open_faq_from_svf"
+            trackingContext="svf_verify_panel"
+          >
+            Read FAQ
+          </LinkButton>
+        </div>
+      </Card>
 
       <Card className="group space-y-4 p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-vault-violet/20 bg-gradient-to-br from-vault-panel/80 to-vault-deep/60">
         <h2 className="font-display text-2xl font-semibold group-hover:text-vault-amber transition-colors duration-300">Contract Details</h2>

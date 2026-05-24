@@ -12,7 +12,7 @@ import {
 import { LinkButton } from "@/components/link-button";
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { SocialShare } from "@/components/social-share";
-import { Card } from "@/components/ui/card";
+import { EmptyState } from "@/components/empty-state";
 import { summarizePulls } from "@/lib/pull-stats";
 import type { PullItem } from "@/types/content";
 
@@ -32,10 +32,16 @@ export function PullsClient({ pulls }: Props) {
   const stats = summarizePulls(filteredPulls);
 
   return (
-    <div className="mx-auto max-w-6xl space-y-12 px-4 py-14 sm:space-y-14 sm:px-5 sm:py-16">
-      <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Pulls", href: "/pulls" }]} />
+    <div className="page-shell">
+      <Breadcrumbs
+        items={[
+          { label: "Home", href: "/" },
+          { label: "Vault", href: "/vault" },
+          { label: "Pulls", href: "/pulls" },
+        ]}
+      />
 
-      <header className="space-y-6 animate-fade-in-up">
+      <header className="page-header space-y-6 animate-fade-in-up">
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1 space-y-4">
             <h1 className="font-display text-4xl font-semibold tracking-tight">
@@ -50,10 +56,22 @@ export function PullsClient({ pulls }: Props) {
           <SocialShare url="/pulls" title="SlabVaultFi Pull History" description="View transparent gacha pull history and ROI" />
         </div>
         <div className="flex flex-wrap gap-3">
-          <LinkButton href="/vault" variant="secondary" className="transition-all duration-300 hover:scale-105">
+          <LinkButton
+            href="/vault"
+            variant="secondary"
+            className="transition-all duration-300 hover:scale-105"
+            trackingEvent="cta_open_vault_from_pulls"
+            trackingContext="pulls_header"
+          >
             View vault
           </LinkButton>
-          <LinkButton href="/community" variant="ghost" className="transition-all duration-300 hover:scale-105">
+          <LinkButton
+            href="/community"
+            variant="ghost"
+            className="transition-all duration-300 hover:scale-105"
+            trackingEvent="cta_open_community_from_pulls"
+            trackingContext="pulls_header"
+          >
             Community
           </LinkButton>
         </div>
@@ -73,12 +91,10 @@ export function PullsClient({ pulls }: Props) {
 
       <div className="space-y-3 animate-slide-in">
         {filteredPulls.length === 0 ? (
-          <Card className="space-y-4 p-8 text-center bg-gradient-to-br from-vault-panel/50 to-vault-deep/50">
-            <p className="font-display text-2xl font-semibold text-foreground">No pulls found</p>
-            <p className="text-muted">
-              Try adjusting your filters or check back later for new pull history.
-            </p>
-          </Card>
+          <EmptyState
+            title="No pulls found"
+            description="Try adjusting your filters or check back later for new pull history."
+          />
         ) : (
           filteredPulls.map((pull, index) => (
             <div key={pull.id} style={{ animationDelay: `${index * 50}ms` }} className="animate-fade-in-up">

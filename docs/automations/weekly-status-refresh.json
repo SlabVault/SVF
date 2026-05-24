@@ -1,0 +1,29 @@
+{
+  "name": "SVF Weekly STATUS Refresh",
+  "description": "Monday refresh of docs/STATUS.md from backlog and repo state",
+  "workflow": {
+    "triggers": [
+      {
+        "type": "schedule",
+        "cron": "0 9 * * 1"
+      }
+    ],
+    "actions": [
+      {
+        "type": "agent",
+        "prompt": "Refresh docs/STATUS.md for SlabVaultFi. Read docs/mvp-backlog.md, recent git history, and CI status if available. Include: current sprint focus, P0 open count (top 5), P2-INT Tensor next 3 items, in-progress table, blockers needing human approval, last verification commands. Keep under 120 lines. Do not commit unless ORCHESTRATE_ALLOW_COMMIT=1."
+      }
+    ],
+    "model": {
+      "id": "composer-2"
+    },
+    "memoryEnabled": true,
+    "gitConfig": {
+      "repos": [
+        {
+          "url": "https://github.com/SlabVault/SVF"
+        }
+      ]
+    }
+  }
+}

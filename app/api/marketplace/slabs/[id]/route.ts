@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 import { getMarketplaceSlabById } from "@/lib/marketplace-slabs";
 import { prisma } from "@/lib/prisma";
+import { requireWriteAuth } from "@/lib/admin-auth";
 
 /**
  * GET /api/marketplace/slabs/:id - Get slab details
@@ -35,9 +37,12 @@ export async function GET(
  * PATCH /api/marketplace/slabs/:id - Update slab (admin only)
  */
 export async function PATCH(
-  request: Request,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  const authError = await requireWriteAuth(request);
+  if (authError) return authError;
+
   try {
     const { id } = await params;
     const body = await request.json();

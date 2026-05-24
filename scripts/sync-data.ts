@@ -13,11 +13,34 @@ async function main() {
 
   console.log("\nSync result:");
   console.log(`  Success: ${result.success}`);
+  console.log(`  Degraded: ${result.degraded}`);
   console.log(`  Slabs updated: ${result.slabsUpdated} (${result.slabSource ?? "none"})`);
   console.log(`  Pulls updated: ${result.pullsUpdated}`);
   console.log(`  Wallet data updated: ${result.walletDataUpdated}`);
+  if (result.staleSources.length) {
+    console.log(`  Stale sources: ${result.staleSources.join(", ")}`);
+  }
   if (result.errors.length) {
     console.log(`  Notes: ${result.errors.join("; ")}`);
+  }
+  if (result.operatorHints.length) {
+    console.log("  Operator hints:");
+    for (const hint of result.operatorHints) {
+      console.log(`    - ${hint}`);
+    }
+  }
+
+  if (result.sourceStatuses.length) {
+    console.log("  Source statuses:");
+    for (const status of result.sourceStatuses) {
+      const age =
+        status.ageMinutes === null
+          ? "n/a"
+          : `${status.ageMinutes}m`;
+      console.log(
+        `    - ${status.key}: ${status.status}${status.isStale ? " (stale)" : ""}; age=${age}; ${status.detail}`,
+      );
+    }
   }
 
   const after = await getSyncStatus();

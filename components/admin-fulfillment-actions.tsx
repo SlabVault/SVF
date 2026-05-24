@@ -6,13 +6,11 @@ import { Button } from "@/components/ui/button";
 type Props = {
   transactionId: string;
   status: string;
-  adminPasswordConfigured: boolean;
 };
 
 export function FulfillmentActions({
   transactionId,
   status,
-  adminPasswordConfigured,
 }: Props) {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
@@ -25,9 +23,6 @@ export function FulfillmentActions({
   }
 
   const handleFulfill = async () => {
-    const password = prompt("Enter admin password:");
-    if (!password) return;
-
     setLoading(true);
     setMessage(null);
 
@@ -38,7 +33,6 @@ export function FulfillmentActions({
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${password}`,
           },
           body: JSON.stringify({
             fulfillmentSignature: fulfillmentSig.trim() || undefined,
@@ -64,28 +58,22 @@ export function FulfillmentActions({
 
   return (
     <div className="space-y-2">
-      {adminPasswordConfigured ? (
-        <>
-          <input
-            type="text"
-            placeholder="Fulfillment tx sig (optional)"
-            value={fulfillmentSig}
-            onChange={(e) => setFulfillmentSig(e.target.value)}
-            className="w-full rounded border border-line bg-vault-panel/40 px-2 py-1 text-xs font-mono"
-          />
-          <Button
-            size="sm"
-            variant="outline"
-            disabled={loading}
-            onClick={handleFulfill}
-            className="w-full text-xs"
-          >
-            {loading ? "Saving..." : "Mark fulfilled"}
-          </Button>
-        </>
-      ) : (
-        <span className="text-xs text-muted">Set ADMIN_PASSWORD for actions</span>
-      )}
+      <input
+        type="text"
+        placeholder="Fulfillment tx sig (optional)"
+        value={fulfillmentSig}
+        onChange={(e) => setFulfillmentSig(e.target.value)}
+        className="w-full rounded border border-line bg-vault-panel/40 px-2 py-1 text-xs font-mono"
+      />
+      <Button
+        size="sm"
+        variant="outline"
+        disabled={loading}
+        onClick={handleFulfill}
+        className="w-full text-xs"
+      >
+        {loading ? "Saving..." : "Mark fulfilled"}
+      </Button>
       {message ? <p className="text-xs text-muted">{message}</p> : null}
     </div>
   );

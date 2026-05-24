@@ -36,13 +36,17 @@ model Transaction {
   slabId               String
   slab                 Slab              @relation(fields: [slabId], references: [id])
   buyerWallet          String
+  paymentSplit         PaymentSplit      @default(FIXED_DUAL)
   solAmount            Decimal
   svfAmount            Decimal
   totalUsdValue        Decimal?
+  listPriceUsdSnapshot Decimal?
   status               TransactionStatus @default(PENDING)
-  transactionSignature String?
-  burnSignature        String?
+  transactionSignature String?           @unique
+  burnSignature        String?           @unique
   fulfillmentSignature String?
+  reservedExpiresAt    DateTime?
+  solPaidAt            DateTime?
   createdAt            DateTime          @default(now())
   updatedAt            DateTime          @updatedAt
   completedAt          DateTime?
@@ -121,4 +125,62 @@ enum TransactionStatus {
   COMPLETED
   FAILED
   CANCELLED
+}
+
+enum PaymentSplit {
+  FIXED_DUAL
+  SOL_80_SVF_20
+}
+
+model ExternalListing {
+  id           String                  @id @default(cuid())
+  source       ExternalListingSource
+  externalId   String
+  deepLinkUrl  String
+  title        String
+  grade        String
+  grader       ExternalListingGrader?
+  certNumber   String?
+  priceUsd     Decimal?
+  priceSol     Decimal?
+  currency     ExternalListingCurrency @default(USD)
+  imageUrl     String
+  setName      String?
+  cardName     String?
+  fmvUsd       Decimal?
+  status       ExternalListingStatus   @default(active)
+  indexedAt    DateTime                @default(now())
+  staleAfter   DateTime
+  createdAt    DateTime                @default(now())
+  updatedAt    DateTime                @updatedAt
+
+  @@unique([source, externalId])
+  @@index([status, source])
+  @@index([indexedAt])
+}
+
+enum ExternalListingSource {
+  collector_crypt
+  phygitals
+  magic_eden
+  manual
+}
+
+enum ExternalListingStatus {
+  active
+  sold
+  unknown
+}
+
+enum ExternalListingCurrency {
+  USD
+  SOL
+  USDC
+}
+
+enum ExternalListingGrader {
+  PSA
+  BGS
+  CGC
+  SGC
 }

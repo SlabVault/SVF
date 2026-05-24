@@ -1,0 +1,28 @@
+{
+  "name": "SVF QA CI Guard",
+  "description": "Run qa:ci on weekday schedule; spawn fix agent on failure",
+  "workflow": {
+    "triggers": [
+      {
+        "type": "schedule",
+        "cron": "0 6 * * 1-5"
+      }
+    ],
+    "actions": [
+      {
+        "type": "agent",
+        "prompt": "Run npm run qa:ci in the SlabVault/SVF repo. If it fails, diagnose and apply the smallest correct fix. Run qa:ci again to verify. Update docs/STATUS.md with results. Do not commit or push unless ORCHESTRATE_ALLOW_COMMIT=1 is set in the automation environment. Do not merge PRs."
+      }
+    ],
+    "model": {
+      "id": "composer-2"
+    },
+    "gitConfig": {
+      "repos": [
+        {
+          "url": "https://github.com/SlabVault/SVF"
+        }
+      ]
+    }
+  }
+}

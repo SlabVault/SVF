@@ -99,6 +99,19 @@ export type SiteConfig = {
   deployerBalanceSol?: number;
   lastWalletSync?: string;
   lastSyncAt?: string;
+  lastSyncAttemptAt?: string;
+  lastExternalListingsDbUpsertCount?: number;
+  lastExternalListingsCcIngestSource?: "api" | "scrape" | "none" | "cached";
+  lastExternalListingsSyncErrors?: string[];
+  syncDiagnostics?: Record<
+    string,
+    {
+      lastAttemptAt: string;
+      lastSuccessAt: string | null;
+      lastStatus: "success" | "failure";
+      detail: string;
+    }
+  >;
 };
 
 export type SlabItem = {
@@ -120,6 +133,8 @@ export type PullItem = {
   costUsd: number | null;
   outcomeUsd: number | null;
   clipUrl: string;
+  /** Immutable Collector Crypt replay token when clipUrl maps to one. */
+  replayId?: string;
   /** Optional thumbnail (slab scan or clip still). */
   imageUrl?: string;
 };

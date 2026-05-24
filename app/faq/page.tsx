@@ -1,16 +1,16 @@
 import type { Metadata } from "next";
 import { Card } from "@/components/ui/card";
 import { Breadcrumbs } from "@/components/breadcrumbs";
+import { LinkButton } from "@/components/link-button";
+import { buildPageMetadata } from "@/lib/seo";
+import { getSiteConfig } from "@/lib/site-config";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildPageMetadata({
   title: "FAQ",
-  description: "Frequently asked questions about SlabVaultFi.",
-  openGraph: {
-    title: "FAQ — SlabVaultFi",
-    description: "Frequently asked questions about SlabVaultFi.",
-    url: "/faq",
-  },
-};
+  description: "Common questions about SlabVaultFi, vault transparency, and participation.",
+  path: "/faq",
+  keywords: ["vault FAQ", "SVF FAQ", "how SlabVaultFi works"],
+});
 
 const faqs = [
   {
@@ -48,11 +48,13 @@ const faqs = [
 ];
 
 export default function FAQPage() {
+  const site = getSiteConfig();
+
   return (
-    <div className="mx-auto max-w-6xl space-y-12 px-4 py-14 sm:space-y-14 sm:px-5 sm:py-16">
+    <div className="page-shell">
       <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "FAQ", href: "/faq" }]} />
 
-      <header className="space-y-6 animate-fade-in-up">
+      <header className="page-header space-y-6 animate-fade-in-up">
         <h1 className="font-display text-4xl font-semibold tracking-tight">
           Frequently Asked Questions
         </h1>
@@ -86,6 +88,24 @@ export default function FAQPage() {
         <p className="text-sm text-muted">
           Join our community on X or Telegram, or check out our GitBook for more detailed documentation.
         </p>
+        <div className="flex flex-wrap gap-3">
+          <LinkButton
+            href={site.links.twitter}
+            external
+            trackingEvent="cta_follow_x_from_faq"
+            trackingContext="faq_footer"
+          >
+            Follow on X
+          </LinkButton>
+          <LinkButton
+            href="/vault/proof"
+            variant="secondary"
+            trackingEvent="cta_open_proof_from_faq"
+            trackingContext="faq_footer"
+          >
+            View proof links
+          </LinkButton>
+        </div>
       </Card>
     </div>
   );

@@ -24,11 +24,24 @@ Marketing site for [SlabVaultFi](https://github.com/SlabVault/SVF): home, vault 
 | `SVF_TOKEN_MINT` | Optional | $SVF SPL mint. Default: `6ZxRa2CWtAcWKb58RMJABuiUYWu9o4oM76QCyMVLpump`. |
 | `SERVER_WALLET_SECRET` | Optional | Deployer secret key as JSON byte array for future auto-fulfillment. **Never commit.** v1 uses manual admin fulfillment. |
 | `ADMIN_PASSWORD` | Optional | Admin dashboard login (with `NEXTAUTH_SECRET` / `NEXTAUTH_URL`). |
-| `CRON_SECRET` | Optional | Protects `POST /api/sync`. Vercel cron sends `Authorization: Bearer CRON_SECRET` when set. |
+| `CRON_SECRET` | **Required in production** | Protects cron-only routes (`POST /api/sync`, `POST /api/cron/expire-reservations`). Vercel cron must send `Authorization: Bearer CRON_SECRET`. |
+| `SYNC_API_TOKEN` | Optional (recommended) | Dedicated bearer token for `/api/sync` automation. If omitted, `/api/sync` bearer auth falls back to `ADMIN_PASSWORD` for backward compatibility. |
 | `NEXTAUTH_SECRET` | Optional | Session signing for admin. |
 | `NEXTAUTH_URL` | Optional | Same origin as the site (e.g. `http://localhost:3000`). |
 
 Copy [`.env.example`](.env.example) to `.env.local` and adjust.
+
+### Environment contract checks
+
+Run these before production deploys:
+
+```bash
+# Validate required production envs and placeholder secrets
+npm run ops:env:production
+
+# Full operator checks (env + robots + sync/cron auth checks)
+npm run ops:check -- --base-url https://slabvault.xyz
+```
 
 ## Marketplace database
 
@@ -38,9 +51,14 @@ Use a **direct** PostgreSQL URL in `.env` or `.env.local`:
 DATABASE_URL=postgresql://postgres:password@localhost:5432/slabvault
 ```
 
-If your `.env` has a `prisma+postgres://` URL from `prisma init`, replace it with a direct connection or start the local Prisma Postgres server with `npx prisma dev`.
+If your `.env` has a `prisma+postgres://` URL from `prisma init`, replace it with a direct connection or start the local Prisma Postgres server with `npx prisma dev`. See **`docs/runbooks/local-dev-database.md`** for Option A (no DB / JSON fallback), Option B (direct Postgres), and Option C (`prisma dev` + Windows/Node 22 notes).
+
+**Trade desk without Postgres:** omit `DATABASE_URL` (or leave the proxy URL unset while developing browse-only). Partner listings read from `data/external-listings.json` (`npm run sync:discover`); vault treasury listings read from `data/slabs.json`. Checkout and admin still require a reachable database.
 
 ```bash
+# Validate migration + schema health (recommended before checkout/admin testing)
+npm run db:preflight:warn
+
 # Apply schema (development)
 npx prisma migrate dev --name marketplace-checkout
 
@@ -51,12 +69,51 @@ npm run db:push
 npm run db:seed
 ```
 
+### Safe baseline for non-empty databases
+
+If your database already contains marketplace tables but lacks migration history (`_prisma_migrations` missing), use the safe baseline flow:
+
+```bash
+npm run db:baseline:plan
+```
+
+Then follow `docs/runbooks/migration-baseline.md` exactly. This avoids destructive resets and prevents silent schema drift (for example missing `Transaction.paymentSplit`).
+
+For targeted PaymentSplit drift diagnostics:
+
+```bash
+npm run db:repair:payment-split:plan
+```
+
 ### Marketplace flow
 
 1. **List** — `/marketplace` reads slabs from PostgreSQL (falls back to `data/slabs.json` if no `DATABASE_URL`).
 2. **Reserve** — Buyer connects wallet, reserves slab → `RESERVED` + pending `Transaction`.
 3. **Checkout** — Split payment: SOL transfer + SVF SPL transfer to treasury. Signatures verified server-side.
 4. **Fulfillment** — Slab marked `SOLD`; transaction → `PENDING_FULFILLMENT`. Admin marks complete after transferring slab from deployer wallet (Collector Crypt / off-chain for v1).
+5. **Reservation cleanup** — A cron route releases expired `RESERVED` slabs every 10 minutes (`POST /api/cron/expire-reservations`).
+
+## GRAILS trade desk — partner listing ingest
+
+`/trade` and `/trade/c/collector-crypt` read graded inventory from partner ingest (not seed-only stubs):
+
+```bash
+# Refresh Collector Crypt scrape + Phygitals seed timestamps → data/external-listings.json
+npm run sync:discover
+
+# When DATABASE_URL is set, also upserts ExternalListing rows in Postgres
+```
+
+| Environment | Data path |
+|-------------|-----------|
+| Local dev (no DB) | `data/external-listings.json` + `data/slabs.json` (treasury) |
+| Staging / prod | Postgres `ExternalListing` cache; JSON fallback if DB empty |
+
+Vercel cron (`vercel.json`) calls `POST /api/sync` every 30 minutes with `CRON_SECRET` — that sync includes partner listings (`external-listings:discover` in sync diagnostics).
+
+Optional env: `TENSOR_API_KEY` (24h vol/Δ on landing), `PARTNER_LIVE_SCRAPE_ENABLED=true` (CC live scrape on collection pages), `HELIUS_API_KEY` (DAS enrichment).
+
+See [`docs/integrations/grails-step-by-step-plan.md`](docs/integrations/grails-step-by-step-plan.md) and [`docs/runbooks/operations-hardening.md`](docs/runbooks/operations-hardening.md).
 
 ## Open Graph and Twitter images
 
@@ -68,19 +125,45 @@ npm run db:seed
 
 ```bash
 npm install
-npm run dev
+# Stop any running node dev/build terminals first, then:
+npm run dev:clean   # preferred local start — wipes .next then dev (see troubleshooting)
+npm run dev         # normal start when .next is healthy
 npm run lint
+npm run test
+npm run test:guardrails
+npm run test:api
 npm run build   # uses webpack on Windows for reliable production builds
+npm run qa:local
+npm run qa:ci
 npm run db:push
 npm run db:seed
+npm run db:preflight
+npm run db:baseline:plan
+npm run db:repair:payment-split:plan
 npm run sync    # refresh data/slabs.json, pulls.json, site.json from scrapers
+npm run sync:discover  # GRAILS partner listings → external-listings.json (+ Postgres upsert)
+npm run ops:env
+npm run ops:verify -- --base-url http://localhost:3000
 ```
 
-**Admin:** `/admin` includes a **Run sync now** button (POST `/api/sync`, requires admin session or `CRON_SECRET`) with `lastSyncAt` from `data/site.json`.
+**Admin:** `/admin` includes a **Run sync now** button (POST `/api/sync`, requires admin session or `Authorization: Bearer ...`) with `lastSyncAt` from `data/site.json`.
 
 Local preview: [http://localhost:3000](http://localhost:3000).
 
 Copy [`.env.example`](.env.example) to `.env.local` for local overrides. Production values are set in the Vercel project dashboard.
+
+### Dev troubleshooting (corrupted `.next`)
+
+If `/` or `/trade` return **500** with `ENOENT ... .next/dev/routes-manifest.json` or missing `.next/dev/cache/webpack/*.pack.gz`, the dev cache is corrupted — usually from running **`npm run dev` and `npm run build` at the same time**, deleting `.next` while the dev server is still running, or switching between Turbopack (`npm run dev:turbopack`) and webpack (`npm run dev`).
+
+**Recovery:**
+
+1. **Stop all Node processes** — Ctrl+C every dev terminal, close parallel `npm run build` / test runners, and quit stray `node.exe` in Task Manager if needed.
+2. Run `npm run dev:clean` (runs `clean:next` which removes stale `.next/lock`, webpack cache, then the full `.next` tree).
+3. Use **`npm run dev:clean`** after corruption or when switching bundlers; use **`npm run dev`** only when `.next` is already healthy.
+4. Reserve `dev:turbopack` for experiments only — default local dev is webpack (`npm run dev` / `dev:clean`).
+
+MetaMask errors in the browser console are harmless noise from the Ethereum browser extension — SlabVault connects Phantom/Solflare on Solana only.
 
 ### Slab images
 
@@ -136,6 +219,24 @@ DNS can take up to 24–48 hours to propagate; often much faster.
 4. Deploy. Vercel runs `next build` automatically.
 
 Market data on the homepage comes from the **Dexscreener public API** (cached ~3 minutes). Numbers are indicative; users should verify on Dexscreener and Birdeye.
+
+## Deployment runbook (migrations + rollback)
+
+1. Ensure production env vars are present in Vercel (`NEXT_PUBLIC_SITE_URL`, `DATABASE_URL`, `NEXTAUTH_SECRET`, `ADMIN_PASSWORD`, `CRON_SECRET`).
+2. Run migration deploy against production database:
+   ```bash
+   npx prisma migrate deploy
+   ```
+3. Deploy application build.
+4. Smoke test critical flow:
+   - `/marketplace` loads live listings
+   - reserve -> checkout -> admin fulfill works for a test slab
+   - `/api/sync` and `/api/cron/expire-reservations` return 401 without bearer token
+5. Rollback strategy:
+   - Re-deploy previous Vercel deployment
+   - If schema rollback is required, apply a dedicated corrective migration (do not manually edit production tables)
+
+For a step-by-step operator checklist (pre-deploy gates, cron auth checks, and rollback workflow), see [`docs/runbooks/operations-hardening.md`](docs/runbooks/operations-hardening.md).
 
 ## License
 

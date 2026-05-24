@@ -17,6 +17,8 @@ type Props = {
   variant?: LegacyVariant;
   external?: boolean;
   className?: string;
+  trackingEvent?: string;
+  trackingContext?: string;
 };
 
 export function LinkButton({
@@ -25,13 +27,21 @@ export function LinkButton({
   variant = "primary",
   external,
   className = "",
+  trackingEvent,
+  trackingContext,
 }: Props) {
   const mapped = variantMap[variant];
 
   if (external) {
     return (
       <Button asChild variant={mapped} className={className}>
-        <a href={href} target="_blank" rel="noreferrer">
+        <a
+          href={href}
+          target="_blank"
+          rel="noreferrer"
+          data-growth-event={trackingEvent}
+          data-growth-context={trackingContext}
+        >
           {children}
         </a>
       </Button>
@@ -40,7 +50,13 @@ export function LinkButton({
 
   return (
     <Button asChild variant={mapped} className={className}>
-      <Link href={href}>{children}</Link>
+      <Link
+        href={href}
+        data-growth-event={trackingEvent}
+        data-growth-context={trackingContext}
+      >
+        {children}
+      </Link>
     </Button>
   );
 }

@@ -1,0 +1,28 @@
+{
+  "name": "SVF CI Failure Fix",
+  "description": "On GitHub CI failure, diagnose and open a fix PR",
+  "workflow": {
+    "triggers": [
+      {
+        "type": "github",
+        "event": "check_suite_completed"
+      }
+    ],
+    "actions": [
+      {
+        "type": "agent",
+        "prompt": "GitHub CI failed on SlabVault/SVF. Read the latest failed check logs from the triggering event. Identify root cause, apply the smallest fix, run npm run qa:ci, and open a PR with a clear summary. Do not merge. Do not modify production env or secrets."
+      }
+    ],
+    "model": {
+      "id": "composer-2"
+    },
+    "gitConfig": {
+      "repos": [
+        {
+          "url": "https://github.com/SlabVault/SVF"
+        }
+      ]
+    }
+  }
+}

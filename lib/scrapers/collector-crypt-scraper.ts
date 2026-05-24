@@ -4,6 +4,7 @@ import * as cheerio from "cheerio";
 import {
   fetchHtml,
   parseFlightStringField,
+  SCRAPER_MAX_RESPONSE_BYTES,
   SCRAPER_TIMEOUT_MS,
   SCRAPER_USER_AGENT,
 } from "./scraper-utils";
@@ -18,6 +19,40 @@ export type CollectorCryptPull = {
   outcomeUsd: number | null;
   clipUrl: string;
 };
+
+/** Immutable replay token from Collector Crypt gacha clip URLs (query or /r/ path). */
+export function extractReplayIdFromClipUrl(clipUrl: string): string | null {
+  const trimmed = clipUrl.trim();
+  if (!trimmed) return null;
+
+  try {
+    const url = new URL(trimmed);
+    const fromQuery = url.searchParams.get("replay");
+    if (fromQuery) return fromQuery;
+
+    const shortPath = url.pathname.match(/^\/r\/([^/]+)\/?$/i);
+    if (shortPath?.[1]) return shortPath[1];
+
+    return null;
+  } catch {
+    const queryMatch = trimmed.match(/[?&]replay=([^&#]+)/i);
+    if (queryMatch?.[1]) return decodeURIComponent(queryMatch[1]);
+
+    const pathMatch = trimmed.match(/\/r\/([^/?#]+)/i);
+    if (pathMatch?.[1]) return pathMatch[1];
+
+    return null;
+  }
+}
+
+/** Stable pull id for sync dedupe and admin audit when a replay token exists. */
+export function collectorCryptPullStableId(
+  pull: Pick<CollectorCryptPull, "id" | "clipUrl">,
+): string {
+  const replayId = extractReplayIdFromClipUrl(pull.clipUrl);
+  if (replayId) return `cc-replay-${replayId}`;
+  return pull.id;
+}
 
 /**
  * Collector Crypt account pages are client-rendered SPAs. Attempt Vollector-style
@@ -72,7 +107,7 @@ export async function scrapeCollectorCryptPulls(
       : null;
 
     if (date || summary) {
-      pulls.push({
+      const draft = {
         id: `pull-${index}`,
         date: date || new Date().toISOString().split("T")[0],
         source: source || "Collector Crypt",
@@ -80,6 +115,10 @@ export async function scrapeCollectorCryptPulls(
         costUsd,
         outcomeUsd,
         clipUrl,
+      };
+      pulls.push({
+        ...draft,
+        id: collectorCryptPullStableId(draft),
       });
     }
   });
@@ -88,7 +127,7 @@ export async function scrapeCollectorCryptPulls(
     /https:\/\/gacha\.collectorcrypt\.com\/\?replay=[a-zA-Z0-9-]+/g;
   const replays = [...html.matchAll(replayPattern)];
   replays.forEach((match, index) => {
-    pulls.push({
+    const draft = {
       id: `replay-${index}`,
       date: new Date().toISOString().split("T")[0],
       source: "Collector Crypt",
@@ -96,6 +135,10 @@ export async function scrapeCollectorCryptPulls(
       costUsd: null,
       outcomeUsd: null,
       clipUrl: match[0],
+    };
+    pulls.push({
+      ...draft,
+      id: collectorCryptPullStableId(draft),
     });
   });
 
@@ -122,6 +165,8 @@ export async function fetchCollectorCryptData(
       const response = await axios.get(apiUrl, {
         headers: { "User-Agent": SCRAPER_USER_AGENT },
         timeout: SCRAPER_TIMEOUT_MS,
+        maxContentLength: SCRAPER_MAX_RESPONSE_BYTES,
+        maxBodyLength: SCRAPER_MAX_RESPONSE_BYTES,
       });
 
       const data = response.data as Array<{
@@ -141,15 +186,21 @@ export async function fetchCollectorCryptData(
       }>;
 
       if (Array.isArray(data) && data.length > 0) {
-        return data.map((item, index) => ({
-          id: item.id || `pull-${index}`,
-          date: item.date || item.timestamp || new Date().toISOString().split("T")[0],
-          source: item.source || item.partner || "Collector Crypt",
-          summary: item.summary || item.description || "Pull from gacha",
-          costUsd: item.cost ?? item.spent ?? null,
-          outcomeUsd: item.outcome ?? item.value ?? null,
-          clipUrl: item.clip_url || item.video_url || "",
-        }));
+        return data.map((item, index) => {
+          const draft = {
+            id: item.id || `pull-${index}`,
+            date: item.date || item.timestamp || new Date().toISOString().split("T")[0],
+            source: item.source || item.partner || "Collector Crypt",
+            summary: item.summary || item.description || "Pull from gacha",
+            costUsd: item.cost ?? item.spent ?? null,
+            outcomeUsd: item.outcome ?? item.value ?? null,
+            clipUrl: item.clip_url || item.video_url || "",
+          };
+          return {
+            ...draft,
+            id: collectorCryptPullStableId(draft),
+          };
+        });
       }
     } catch {
       // try next candidate

@@ -68,7 +68,13 @@ export function LivePullBoard({ livePull, stream }: Props) {
                 <LivePullCountdown endsAt={livePull.endsAt.trim()} />
               ) : null}
             </div>
-            <LinkButton href={livePull.url} external className="w-full sm:w-auto shrink-0">
+            <LinkButton
+              href={livePull.url}
+              external
+              className="w-full sm:w-auto shrink-0"
+              trackingEvent="cta_join_live_pull"
+              trackingContext="home_live_pull"
+            >
               Join pull
             </LinkButton>
           </div>
@@ -93,6 +99,8 @@ export function LivePullBoard({ livePull, stream }: Props) {
           external
           variant="secondary"
           className="w-full sm:w-auto shrink-0"
+          trackingEvent="cta_watch_stream"
+          trackingContext="home_next_stream"
         >
           Watch on X
         </LinkButton>

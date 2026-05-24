@@ -1,93 +1,47 @@
 "use client";
 
-import { useWallet } from "@solana/wallet-adapter-react";
-import { WalletReadyState } from "@solana/wallet-adapter-base";
-import { useMemo, useState } from "react";
-import { Button } from "@/components/ui/button";
+import dynamic from "next/dynamic";
+import { useWalletUiMessage } from "@/components/wallet-provider";
+import { cn } from "@/lib/utils";
 
-export function WalletButton() {
-  const { publicKey, connect, disconnect, connecting, wallet, wallets, select } =
-    useWallet();
-  const [message, setMessage] = useState<string | null>(null);
+const WALLET_CONNECT_LABEL = "Select Wallet";
 
-  const selectableWallet = useMemo(
-    () =>
-      wallets.find(
-        ({ readyState }) =>
-          readyState === WalletReadyState.Installed ||
-          readyState === WalletReadyState.Loadable,
-      ),
-    [wallets],
+function WalletButtonPlaceholder() {
+  return (
+    <button
+      type="button"
+      className="wallet-adapter-button wallet-adapter-button-custom min-w-[9.5rem]"
+      disabled
+      aria-busy="true"
+      aria-label="Connect wallet"
+    >
+      {WALLET_CONNECT_LABEL}
+    </button>
   );
+}
 
-  const handleConnect = async () => {
-    setMessage(null);
+const WalletMultiButton = dynamic(
+  () =>
+    import("@solana/wallet-adapter-react-ui").then((mod) => ({
+      default: mod.WalletMultiButton,
+    })),
+  {
+    ssr: false,
+    loading: WalletButtonPlaceholder,
+  },
+);
 
-    const ensureWalletSelected = () => {
-      if (wallet) return true;
-      if (!selectableWallet?.adapter.name) {
-        setMessage(
-          "No wallet selected. Install or unlock Phantom/Solflare, then try again.",
-        );
-        return false;
-      }
-      select(selectableWallet.adapter.name);
-      return true;
-    };
-
-    const isWalletNotSelectedError = (error: unknown) =>
-      error instanceof Error && error.name === "WalletNotSelectedError";
-
-    try {
-      if (!ensureWalletSelected()) return;
-      await connect();
-    } catch (error) {
-      if (isWalletNotSelectedError(error)) {
-        if (!ensureWalletSelected()) return;
-        setMessage(
-          "Select a wallet first, then press Connect Wallet again.",
-        );
-        return;
-      }
-
-      if (error instanceof Error && error.message) {
-        setMessage(error.message);
-      } else {
-        setMessage("Unable to connect wallet. Please try again.");
-      }
-      console.error("Wallet connect failed:", error);
-    }
-  };
-
-  if (connecting) {
-    return (
-      <Button disabled className="transition-all duration-300">
-        Connecting...
-      </Button>
-    );
-  }
-
-  if (publicKey) {
-    const shortAddress = `${publicKey.toString().slice(0, 4)}...${publicKey.toString().slice(-4)}`;
-    return (
-      <Button
-        onClick={() => disconnect()}
-        variant="outline"
-        className="transition-all duration-300 hover:scale-105"
-      >
-        {shortAddress}
-      </Button>
-    );
-  }
+export function WalletButton({ className }: { className?: string }) {
+  const { message } = useWalletUiMessage();
 
   return (
     <div className="space-y-1 text-right">
-      <Button
-        onClick={handleConnect}
-        className="transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-vault-violet/30"
-      >
-        Connect Wallet
-      </Button>
+      <WalletMultiButton
+        className={cn(
+          "wallet-adapter-button-custom min-w-[9.5rem] transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-vault-violet/30",
+          className,
+        )}
+      />
       {message ? (
         <p className="max-w-[18rem] text-xs text-amber-300/90" role="status">
           {message}

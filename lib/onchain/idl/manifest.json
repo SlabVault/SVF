@@ -1,0 +1,27 @@
+{
+  "source": "https://github.com/tensor-foundation/IDLs",
+  "commit": "b0fb19f2720d24f6ea59ab4d1ee19c5896b4d68c",
+  "pinnedAt": "2026-05-21",
+  "files": {
+    "marketplace_idl.json": {
+      "programId": "TCMPhJdwDryooaGtiocG1u3xcYbRpiJzb283XfCZsDp",
+      "key": "marketplaceTcm"
+    },
+    "fees_idl.json": {
+      "programId": "TFEEgwDP6nn1s8mMX2tTNPPz8j2VomkphLUmyxKm17A",
+      "key": "fees"
+    },
+    "escrow_idl.json": {
+      "programId": "TSWAPaqyCSx2KABk68Shruf4rp7CxcNi8hAsbdwmHbN",
+      "key": "escrow"
+    },
+    "whitelist_idl.json": {
+      "programId": "TL1ST2iRBzuGTqLn1KXnGdSnEow62BzPnGiqyRXhWtW",
+      "key": "whitelist"
+    },
+    "amm_idl.json": {
+      "programId": "TAMM6ub33ij1mbetoMyVBLeKY5iP41i4UPUJQGkhfsg",
+      "key": "amm"
+    }
+  }
+}

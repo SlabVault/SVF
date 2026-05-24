@@ -3,24 +3,24 @@ import { Breadcrumbs } from "@/components/breadcrumbs";
 import { LinkButton } from "@/components/link-button";
 import { CopyAddressButton } from "@/components/copy-address-button";
 import { Card } from "@/components/ui/card";
+import { VaultSubNav } from "@/components/vault-sub-nav";
+import { buildPageMetadata } from "@/lib/seo";
 import { getSiteConfig } from "@/lib/site-config";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildPageMetadata({
   title: "Proof of reserves",
   description:
-    "On-chain Squads treasury, Collector Crypt accounts, Vollector, Vaulted, Collectr, and SNS addresses for SlabVaultFi.",
-  openGraph: {
-    title: "Proof of reserves — SlabVaultFi",
-    url: "/vault/proof",
-  },
-};
+    "Official treasury, SNS, and vault profile links to verify SlabVaultFi reserves.",
+  path: "/vault/proof",
+  keywords: ["proof of reserves", "treasury verification", "vault links"],
+});
 
 export default function ProofOfReservesPage() {
   const site = getSiteConfig();
   const { links, vaultAddresses, collectorCryptAccounts, vollector } = site;
 
   return (
-    <div className="mx-auto max-w-6xl space-y-10 px-4 py-14 sm:px-5 sm:py-16">
+    <div className="page-shell space-y-10 sm:space-y-12">
       <Breadcrumbs
         items={[
           { label: "Home", href: "/" },
@@ -30,6 +30,7 @@ export default function ProofOfReservesPage() {
       />
 
       <header className="space-y-4">
+        <VaultSubNav />
         <h1 className="font-display text-4xl font-semibold tracking-tight sm:text-5xl">
           Proof of reserves
         </h1>
@@ -47,7 +48,12 @@ export default function ProofOfReservesPage() {
           On-chain treasury for $SVF creator fees and vault operations.
         </p>
         <div className="flex flex-wrap gap-3">
-          <LinkButton href={site.treasurySquadsUrl} external>
+          <LinkButton
+            href={site.treasurySquadsUrl}
+            external
+            trackingEvent="cta_open_squads_treasury"
+            trackingContext="proof_squads_card"
+          >
             Open Squads treasury
           </LinkButton>
           <CopyAddressButton address={vaultAddresses.treasury} />
@@ -62,11 +68,24 @@ export default function ProofOfReservesPage() {
         <p className="text-sm text-muted">Treasury and deployer gacha accounts.</p>
         <div className="flex flex-wrap gap-3">
           {collectorCryptAccounts.map((account) => (
-            <LinkButton key={account.url} href={account.url} external variant="secondary">
+            <LinkButton
+              key={account.url}
+              href={account.url}
+              external
+              variant="secondary"
+              trackingEvent="cta_open_collector_crypt_account"
+              trackingContext={`proof_collector_crypt:${account.label}`}
+            >
               CC {account.label}
             </LinkButton>
           ))}
-          <LinkButton href={links.gachaCollectorCrypt} external variant="ghost">
+          <LinkButton
+            href={links.gachaCollectorCrypt}
+            external
+            variant="ghost"
+            trackingEvent="cta_open_collector_crypt_referral"
+            trackingContext="proof_collector_crypt"
+          >
             Referral gacha
           </LinkButton>
         </div>
@@ -75,13 +94,31 @@ export default function ProofOfReservesPage() {
       <Card className="space-y-4 p-6">
         <h2 className="font-heading text-xl font-bold">Physical vault profiles</h2>
         <div className="flex flex-wrap gap-3">
-          <LinkButton href={vollector.url} external variant="secondary">
+          <LinkButton
+            href={vollector.url}
+            external
+            variant="secondary"
+            trackingEvent="cta_open_vollector_profile"
+            trackingContext="proof_profiles"
+          >
             {vollector.label}
           </LinkButton>
-          <LinkButton href={links.vaulted} external variant="secondary">
+          <LinkButton
+            href={links.vaulted}
+            external
+            variant="secondary"
+            trackingEvent="cta_open_vaulted_profile"
+            trackingContext="proof_profiles"
+          >
             Vaulted
           </LinkButton>
-          <LinkButton href={links.collectr} external variant="secondary">
+          <LinkButton
+            href={links.collectr}
+            external
+            variant="secondary"
+            trackingEvent="cta_open_collectr_profile"
+            trackingContext="proof_profiles"
+          >
             Collectr showcase
           </LinkButton>
         </div>
@@ -111,10 +148,20 @@ export default function ProofOfReservesPage() {
       </Card>
 
       <div className="flex flex-wrap gap-3">
-        <LinkButton href="/vault" variant="secondary">
+        <LinkButton
+          href="/vault"
+          variant="secondary"
+          trackingEvent="cta_back_to_vault_from_proof"
+          trackingContext="proof_footer"
+        >
           ← Vault gallery
         </LinkButton>
-        <LinkButton href="/" variant="ghost">
+        <LinkButton
+          href="/"
+          variant="ghost"
+          trackingEvent="cta_home_from_proof"
+          trackingContext="proof_footer"
+        >
           Home
         </LinkButton>
       </div>

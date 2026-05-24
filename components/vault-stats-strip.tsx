@@ -4,9 +4,11 @@ import type { VaultSummary } from "@/lib/vault-stats";
 
 type Props = {
   summary: VaultSummary;
+  /** Hide section heading when nested inside a parent section (e.g. home live pulse). */
+  embedded?: boolean;
 };
 
-export function VaultStatsStrip({ summary }: Props) {
+export function VaultStatsStrip({ summary, embedded = false }: Props) {
   const total =
     summary.totalValueUsd != null
       ? formatUsd(summary.totalValueUsd)
@@ -20,19 +22,21 @@ export function VaultStatsStrip({ summary }: Props) {
     : "—";
 
   return (
-    <section className="space-y-4" aria-labelledby="vault-stats-heading">
-      <div>
-        <h2
-          id="vault-stats-heading"
-          className="font-heading text-2xl font-bold tracking-tight sm:text-3xl"
-        >
-          Vault at a glance
-        </h2>
-        <p className="mt-1 max-w-prose text-sm text-muted">
-          Aggregated from the on-site slab ledger. Manual override applies when set
-          in site.json.
-        </p>
-      </div>
+    <section className="space-y-4" aria-labelledby={embedded ? undefined : "vault-stats-heading"}>
+      {embedded ? null : (
+        <div>
+          <h2
+            id="vault-stats-heading"
+            className="font-heading text-2xl font-bold tracking-tight sm:text-3xl"
+          >
+            Vault at a glance
+          </h2>
+          <p className="mt-1 max-w-prose text-sm text-muted">
+            Aggregated from the on-site slab ledger. Manual override applies when set
+            in site.json.
+          </p>
+        </div>
+      )}
       <div className="grid gap-4 sm:grid-cols-3">
         <Card
           variant="stat"

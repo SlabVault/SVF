@@ -24,7 +24,7 @@ export function PullRow({ pull }: Props) {
         <div className="hidden overflow-hidden rounded-lg border border-line md:block">
           <SlabImage
             src={imageSrc}
-            alt=""
+            alt={`${pull.source} pull image`}
             className="aspect-[3/4] h-20 w-full"
           />
         </div>
@@ -40,7 +40,7 @@ export function PullRow({ pull }: Props) {
           <div className="shrink-0 overflow-hidden rounded-lg border border-line md:hidden">
             <SlabImage
               src={imageSrc}
-              alt=""
+              alt={`${pull.source} pull image`}
               className="aspect-[3/4] h-16 w-12"
             />
           </div>

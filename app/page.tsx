@@ -1,95 +1,48 @@
 import type { Metadata } from "next";
 
-import { GachaTiers } from "@/components/gacha-tiers";
 import { HeroSection } from "@/components/hero-section";
-import { HowItWorks } from "@/components/how-it-works";
-import { LinkButton } from "@/components/link-button";
-import { LivePullBoard } from "@/components/live-pull-board";
-import { RecentPullsCarousel } from "@/components/recent-pulls-carousel";
-import { StreamEmbed } from "@/components/stream-embed";
-import { SlabCard } from "@/components/slab-card";
-import { VaultStatsStrip } from "@/components/vault-stats-strip";
-import { Card } from "@/components/ui/card";
-import { normalizeSlabImageSrc } from "@/lib/slab-image-url";
-import { summarizeVault } from "@/lib/vault-stats";
+import { HomeLivePulse } from "@/components/home-live-pulse";
+import { HomeTradeCta } from "@/components/home-trade-cta";
+import { HomeValueProp } from "@/components/home-value-prop";
+import { PlatformLogosStrip } from "@/components/platform-logos-strip";
+import { VaultFlywheel } from "@/components/vault-flywheel";
+import { VaultTreasuryTeaser } from "@/components/vault-treasury-teaser";
 import { getPulls, getSiteConfig, getSlabs } from "@/lib/site-config";
+import { buildPageMetadata } from "@/lib/seo";
 
 export default async function Home() {
   const site = getSiteConfig();
   const slabs = getSlabs();
   const pulls = getPulls();
-  const featuredSlabs = slabs
-    .filter((slab) => normalizeSlabImageSrc(slab.imageUrl))
-    .slice(0, 4);
-  const recentPulls = pulls.slice(0, 8);
-  const vaultSummary = summarizeVault(slabs, site.manualVaultValueUsd);
 
   return (
     <>
       <HeroSection site={site} slabs={slabs} />
+      <PlatformLogosStrip />
 
-      <div className="mx-auto max-w-6xl space-y-14 px-4 py-12 sm:space-y-16 sm:px-5 sm:py-14">
-        <LivePullBoard livePull={site.livePull} stream={site.stream} />
-
-        <GachaTiers site={site} />
-
-        <VaultStatsStrip summary={vaultSummary} />
-
-        <section className="space-y-6 motion-safe:animate-fade-in-up">
-          <div className="flex items-center justify-between gap-3">
-            <h2 className="font-heading text-2xl font-bold tracking-tight sm:text-3xl">
-              Featured slabs
-            </h2>
-            <LinkButton href="/marketplace" variant="ghost">
-              View all →
-            </LinkButton>
-          </div>
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            {featuredSlabs.map((slab) => (
-              <SlabCard key={slab.id} slab={slab} />
-            ))}
-          </div>
-        </section>
-
-        <RecentPullsCarousel pulls={recentPulls} />
-
-        {site.stream.live || site.stream.embedUrl ? (
-          <StreamEmbed
-            live={site.stream.live}
-            embedUrl={site.stream.embedUrl}
-            watchUrl={site.stream.watchUrl}
-          />
-        ) : null}
-
-        <HowItWorks />
-
-        <Card className="border-line bg-gradient-to-br from-vault-panel/80 to-vault-deep/60 p-6 transition-[border-color,box-shadow] hover:border-vault-violet/25 sm:p-8">
-          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <div>
-              <h2 className="font-heading text-2xl font-bold">Proof of reserves</h2>
-              <p className="mt-2 max-w-prose text-sm text-muted">
-                Squads treasury, Collector Crypt accounts, Vollector, Vaulted,
-                Collectr, and SNS addresses — all in one place.
-              </p>
-            </div>
-            <LinkButton href="/vault/proof" variant="secondary" className="shrink-0">
-              View proof links
-            </LinkButton>
-          </div>
-        </Card>
+      <div className="page-shell space-y-14 sm:space-y-16 lg:space-y-20">
+        <VaultFlywheel />
+        <HomeLivePulse site={site} slabs={slabs} pulls={pulls} />
+        <HomeValueProp />
+        <VaultTreasuryTeaser />
+        <HomeTradeCta />
       </div>
     </>
   );
 }
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildPageMetadata({
   title: "Home",
   description:
-    "SlabVaultFi: live gacha pulls, graded Pokémon slabs, and a transparent multisig vault on Solana.",
-  openGraph: {
-    title: "SlabVaultFi — Community-owned collectible vault",
-    description:
-      "Live gacha pulls, graded Pokémon slabs, and a transparent multisig vault.",
-    url: "/",
-  },
-};
+    "SlabVault — a Solana-native community-owned collectible vault. Live pulls, graded slabs, transparent treasury, and $SVF coordination. Launch GRAILS for graded-card trading.",
+  path: "/",
+  keywords: [
+    "community vault",
+    "graded slabs",
+    "Solana collectibles",
+    "SVF token",
+    "GRAILS",
+    "collectible treasury",
+  ],
+  imageAlt: "SlabVault community collectible vault on Solana",
+});

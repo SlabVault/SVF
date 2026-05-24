@@ -5,9 +5,10 @@ import type { SiteConfig } from "@/types/content";
 
 type Props = {
   site: SiteConfig;
+  trackingContext?: string;
 };
 
-export function GachaTiers({ site }: Props) {
+export function GachaTiers({ site, trackingContext = "home_pull_tiers" }: Props) {
   const tiers = getGachaTiers(site);
 
   return (
@@ -23,18 +24,18 @@ export function GachaTiers({ site }: Props) {
         </div>
       </div>
 
-      <div className="flex gap-4 overflow-x-auto pb-2 snap-x snap-mandatory [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <div className="-mx-4 flex gap-3 overflow-x-auto overscroll-x-contain scroll-px-4 px-4 pb-2 snap-x snap-mandatory scroll-smooth sm:-mx-5 sm:gap-4 sm:scroll-px-5 sm:px-5 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {tiers.map((tier) => (
           <Card
             key={tier.href}
-            className="group min-w-[min(100%,16rem)] shrink-0 snap-start flex-col gap-4 overflow-hidden p-0 transition-[border-color,box-shadow] hover:border-vault-violet/35 hover:shadow-[0_0_32px_-12px_rgba(139,92,246,0.45)] sm:min-w-[14rem]"
+            className="group flex w-[14rem] shrink-0 snap-start flex-col gap-0 overflow-hidden p-0 transition-[border-color,box-shadow] hover:border-vault-violet/35 hover:shadow-[0_0_32px_-12px_rgba(139,92,246,0.45)] sm:w-[16rem] lg:w-[18rem]"
           >
             <div className="relative aspect-[16/10] bg-gradient-to-br from-vault-violet/25 to-vault-deep">
               {tier.imageUrl?.trim() ? (
                 // eslint-disable-next-line @next/next/no-img-element -- optional CDN URLs from JSON
                 <img
                   src={tier.imageUrl.trim()}
-                  alt=""
+                  alt={`${tier.name} pull tier`}
                   className="h-full w-full object-cover opacity-90 transition-opacity group-hover:opacity-100"
                   referrerPolicy="no-referrer"
                 />
@@ -53,7 +54,14 @@ export function GachaTiers({ site }: Props) {
                 </p>
                 <p className="mt-0.5 text-sm text-muted">{tier.priceLabel}</p>
               </div>
-              <LinkButton href={tier.href} external variant="secondary" className="w-full">
+              <LinkButton
+                href={tier.href}
+                external
+                variant="secondary"
+                className="w-full"
+                trackingEvent="cta_open_gacha_partner"
+                trackingContext={`${trackingContext}:${tier.name}`}
+              >
                 Open gacha
               </LinkButton>
             </div>

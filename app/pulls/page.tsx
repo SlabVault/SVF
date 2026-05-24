@@ -1,16 +1,14 @@
 import type { Metadata } from "next";
 import { PullsClient } from "@/components/pulls-client";
+import { buildPageMetadata } from "@/lib/seo";
 import { getPulls } from "@/lib/site-config";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildPageMetadata({
   title: "Pulls",
-  description: "SlabVaultFi gacha pull history, ROI notes, and clip links.",
-  openGraph: {
-    title: "Pull history — SlabVaultFi",
-    description: "SlabVaultFi gacha pull history, ROI notes, and clip links.",
-    url: "/pulls",
-  },
-};
+  description: "Review SlabVaultFi pull history with notes and clip references.",
+  path: "/pulls",
+  keywords: ["pull history", "gacha results", "stream clips"],
+});
 
 export default function PullsPage() {
   const pulls = getPulls();

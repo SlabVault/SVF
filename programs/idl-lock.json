@@ -1,0 +1,16 @@
+{
+  "tensorFoundationIdls": {
+    "repo": "https://github.com/tensor-foundation/IDLs",
+    "commit": "b0fb19f2720d24f6ea59ab4d1ee19c5896b4d68c",
+    "note": "Replace commit with SHA after cloning IDLs for Anchor client codegen."
+  },
+  "tensorMarketplace": {
+    "repo": "https://github.com/tensor-foundation/marketplace",
+    "programIdMainnet": "TCMPhJdwDryooaGtiocG1u3xcYbRpiJzb283XfCZsDp",
+    "docs": "https://docs.tensor.foundation/protocols"
+  },
+  "tensorFees": {
+    "repo": "https://github.com/tensor-foundation/fees",
+    "programIdMainnet": "TFEEgwDP6nn1s8mMX2tTNPPz8j2VomkphLUmyxKm17A"
+  }
+}

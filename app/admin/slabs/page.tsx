@@ -86,7 +86,7 @@ export default async function AdminSlabsPage() {
                     <td className="px-6 py-4">
                       <div className="flex gap-2">
                         <Button variant="outline" size="sm" asChild>
-                          <a href={`/marketplace/${slab.id}`} target="_blank" rel="noreferrer">
+                          <a href={`/vault/shop/${slab.id}`} target="_blank" rel="noreferrer">
                             View
                           </a>
                         </Button>

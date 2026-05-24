@@ -1,0 +1,20 @@
+  Generating static pages using 3 workers (36/48) 
+G£ô Generating static pages using 3 workers (48/48) in 16.6s
+  Finalizing page optimization ...
+  Collecting build traces ...
+Error: ENOENT: no such file or directory, open 'C:\Users\amars\Desktop\SVF\.next\server\proxy.js.nft.json'
+    at ignore-listed frames {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'C:\\Users\\amars\\Desktop\\SVF\\.next\\server\\proxy.js.nft.json'
+}
+System.Management.Automation.RemoteException
+> Build error occurred
+Error: ENOENT: no such file or directory, open 'C:\Users\amars\Desktop\SVF\.next\server\proxy.js.nft.json'
+    at ignore-listed frames {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'C:\\Users\\amars\\Desktop\\SVF\\.next\\server\\proxy.js.nft.json'
+}

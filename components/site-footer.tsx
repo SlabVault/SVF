@@ -7,6 +7,9 @@ import { CopyAddressButton } from "@/components/copy-address-button";
 import { FooterDisclaimer } from "@/components/footer-disclaimer";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
+import { LAUNCH_APP_HREF } from "@/lib/brand";
+import { TRADE_ROUTES } from "@/lib/trade-routes";
+import { VAULT_ROUTES } from "@/lib/vault-routes";
 
 type Props = {
   site: SiteConfig;
@@ -30,7 +33,7 @@ export function SiteFooter({ site }: Props) {
 
   return (
     <footer className="border-t border-line bg-vault-deep/85 transition-all duration-300">
-      <div className="mx-auto max-w-6xl space-y-8 px-4 py-12 sm:px-5">
+      <div className="mx-auto max-w-6xl space-y-8 px-4 py-10 sm:px-5 sm:py-12">
         <div className="grid gap-8 md:grid-cols-3">
           <div className="space-y-3">
             <p className="font-display text-base font-semibold text-foreground transition-colors hover:text-vault-amber">{site.brandName}</p>
@@ -49,6 +52,7 @@ export function SiteFooter({ site }: Props) {
                   size="sm"
                   className="h-auto px-2 py-1 text-xs transition-all duration-300 hover:scale-105"
                   onClick={() => setShowFullAddress(!showFullAddress)}
+                  aria-pressed={showFullAddress}
                 >
                   {showFullAddress ? "Show less" : "Show full"}
                 </Button>
@@ -82,9 +86,29 @@ export function SiteFooter({ site }: Props) {
 
         <Separator className="bg-line/80" />
 
-        <div className="grid gap-6 sm:grid-cols-3">
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           <div className="space-y-2">
-            <p className="text-xs font-semibold uppercase tracking-wide text-muted">Trading</p>
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted">Platform</p>
+            <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
+              <Link className={footerMutedLinkClass} href="/">
+                Home
+              </Link>
+              <Link className={footerMutedLinkClass} href={VAULT_ROUTES.overview}>
+                Vault
+              </Link>
+              <Link className={footerMutedLinkClass} href={LAUNCH_APP_HREF}>
+                GRAILS
+              </Link>
+              <Link className={footerMutedLinkClass} href={TRADE_ROUTES.all}>
+                All listings
+              </Link>
+              <Link className={footerMutedLinkClass} href="/pulls">
+                Pulls
+              </Link>
+            </div>
+          </div>
+          <div className="space-y-2">
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted">Market links</p>
             <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
               <Link className={footerMutedLinkClass} href={links.pump} target="_blank" rel="noreferrer">
                 Pump.fun
@@ -98,7 +122,7 @@ export function SiteFooter({ site }: Props) {
             </div>
           </div>
           <div className="space-y-2">
-            <p className="text-xs font-semibold uppercase tracking-wide text-muted">Social</p>
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted">Official channels</p>
             <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
               <Link className={footerMutedLinkClass} href={links.twitter} target="_blank" rel="noreferrer">
                 X
@@ -112,11 +136,6 @@ export function SiteFooter({ site }: Props) {
               <Link className={footerMutedLinkClass} href={links.linktree} target="_blank" rel="noreferrer">
                 Linktree
               </Link>
-            </div>
-          </div>
-          <div className="space-y-2">
-            <p className="text-xs font-semibold uppercase tracking-wide text-muted">Documentation</p>
-            <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
               <Link className={footerMutedLinkClass} href={links.gitbook} target="_blank" rel="noreferrer">
                 GitBook
               </Link>

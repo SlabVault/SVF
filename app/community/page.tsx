@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 
-import { Disclaimer } from "@/components/disclaimer";
 import { LinkButton } from "@/components/link-button";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { SocialShare } from "@/components/social-share";
+import { buildPageMetadata } from "@/lib/seo";
 import { getSiteConfig } from "@/lib/site-config";
 
 const externalLinkClass =
@@ -15,10 +15,10 @@ export default function CommunityPage() {
   const site = getSiteConfig();
 
   return (
-    <div className="mx-auto max-w-6xl space-y-12 px-4 py-14 sm:space-y-14 sm:px-5 sm:py-16">
+    <div className="page-shell">
       <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Community", href: "/community" }]} />
 
-      <header className="space-y-6 animate-fade-in-up">
+      <header className="page-header space-y-6 animate-fade-in-up">
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1 space-y-4">
             <div className="flex items-center gap-2">
@@ -35,10 +35,23 @@ export default function CommunityPage() {
           <SocialShare url="/community" title="SlabVaultFi Community" description="Join the community and follow our roadmap" />
         </div>
         <div className="flex flex-wrap gap-3">
-          <LinkButton href={site.links.twitter} external className="transition-all duration-300 hover:scale-105">
+          <LinkButton
+            href={site.links.twitter}
+            external
+            className="transition-all duration-300 hover:scale-105"
+            trackingEvent="cta_follow_x_from_community"
+            trackingContext="community_header"
+          >
             Follow on X
           </LinkButton>
-          <LinkButton href={site.links.telegram} external variant="secondary" className="transition-all duration-300 hover:scale-105">
+          <LinkButton
+            href={site.links.telegram}
+            external
+            variant="secondary"
+            className="transition-all duration-300 hover:scale-105"
+            trackingEvent="cta_join_telegram_from_community"
+            trackingContext="community_header"
+          >
             Join Telegram
           </LinkButton>
         </div>
@@ -116,8 +129,6 @@ export default function CommunityPage() {
         </Card>
       </section>
 
-      <Disclaimer />
-
       <Card variant="emphasis" className="group space-y-4 p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-vault-violet/20 animate-fade-in-up">
         <h2 className="font-display text-xl font-semibold text-foreground group-hover:text-vault-amber transition-colors duration-300">
           Verify before you interact
@@ -138,12 +149,9 @@ export default function CommunityPage() {
   );
 }
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildPageMetadata({
   title: "Community",
-  description: "SlabVaultFi socials, referrals, pools, and roadmap.",
-  openGraph: {
-    title: "Community — SlabVaultFi",
-    description: "SlabVaultFi socials, referrals, pools, and roadmap.",
-    url: "/community",
-  },
-};
+  description: "Official SlabVaultFi channels, partner links, and safety reminders.",
+  path: "/community",
+  keywords: ["community links", "official channels", "partner referrals"],
+});

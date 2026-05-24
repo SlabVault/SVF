@@ -1,13 +1,18 @@
 import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireAuth } from "@/lib/admin-auth";
+import { requireAdminRole, requireAuth, requireWriteAuth } from "@/lib/admin-auth";
+import { jsonError } from "@/lib/api-errors";
 
 /**
  * POST /api/admin/slabs - Admin: Create/update slab listing
  */
-export async function POST(request: Request) {
-  const authError = requireAuth(request);
+export async function POST(request: NextRequest) {
+  const authError = await requireWriteAuth(request);
   if (authError) return authError;
+
+  const roleError = await requireAdminRole(request, ["admin"]);
+  if (roleError) return roleError;
 
   try {
     const body = await request.json();
@@ -64,19 +69,27 @@ export async function POST(request: Request) {
     return NextResponse.json(slab);
   } catch (error) {
     console.error("Error managing slab:", error);
-    return NextResponse.json(
-      { error: "Failed to manage slab" },
-      { status: 500 }
-    );
+    return jsonError({
+      request,
+      status: 500,
+      code: "ADMIN_SLABS_MUTATION_INTERNAL_ERROR",
+      message: "Failed to manage slab",
+      details: {
+        reason: error instanceof Error ? error.message : "unknown_error",
+      },
+    });
   }
 }
 
 /**
  * GET /api/admin/slabs - Admin: List all slabs
  */
-export async function GET(request: Request) {
-  const authError = requireAuth(request);
+export async function GET(request: NextRequest) {
+  const authError = await requireAuth(request);
   if (authError) return authError;
+
+  const roleError = await requireAdminRole(request, ["admin"]);
+  if (roleError) return roleError;
 
   try {
     const { searchParams } = new URL(request.url);
@@ -102,9 +115,14 @@ export async function GET(request: Request) {
     return NextResponse.json(slabs);
   } catch (error) {
     console.error("Error fetching slabs:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch slabs" },
-      { status: 500 }
-    );
+    return jsonError({
+      request,
+      status: 500,
+      code: "ADMIN_SLABS_LIST_INTERNAL_ERROR",
+      message: "Failed to fetch slabs",
+      details: {
+        reason: error instanceof Error ? error.message : "unknown_error",
+      },
+    });
   }
 }

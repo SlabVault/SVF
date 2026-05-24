@@ -16,25 +16,67 @@ export function QuickLinks({ links }: Props) {
         </p>
       </div>
       <div className="flex flex-wrap gap-3">
-        <LinkButton href={links.gitbook} external variant="secondary">
+        <LinkButton
+          href={links.gitbook}
+          external
+          variant="secondary"
+          trackingEvent="cta_open_gitbook"
+          trackingContext="community_quick_links"
+        >
           GitBook docs
         </LinkButton>
-        <LinkButton href={links.twitter} external variant="secondary">
+        <LinkButton
+          href={links.twitter}
+          external
+          variant="secondary"
+          trackingEvent="cta_follow_x"
+          trackingContext="community_quick_links"
+        >
           X (Twitter)
         </LinkButton>
-        <LinkButton href={links.telegram} external variant="secondary">
+        <LinkButton
+          href={links.telegram}
+          external
+          variant="secondary"
+          trackingEvent="cta_join_telegram"
+          trackingContext="community_quick_links"
+        >
           Telegram
         </LinkButton>
-        <LinkButton href={links.linktree} external variant="secondary">
+        <LinkButton
+          href={links.linktree}
+          external
+          variant="secondary"
+          trackingEvent="cta_open_linktree"
+          trackingContext="community_quick_links"
+        >
           Linktree
         </LinkButton>
-        <LinkButton href={links.pump} external variant="secondary">
+        <LinkButton
+          href={links.pump}
+          external
+          variant="secondary"
+          trackingEvent="cta_open_pump"
+          trackingContext="community_quick_links"
+        >
           Pump.fun
         </LinkButton>
-        <LinkButton href={links.dexscreener} external variant="secondary">
+        <LinkButton
+          href={links.dexscreener}
+          external
+          variant="secondary"
+          trackingEvent="cta_open_dexscreener"
+          trackingContext="community_quick_links"
+        >
           Dexscreener
         </LinkButton>
-        <LinkButton href={links.birdeye} external variant="secondary">
+        <LinkButton
+          href={links.birdeye}
+          external
+          variant="secondary"
+          trackingEvent="cta_open_birdeye"
+          trackingContext="community_quick_links"
+        >
           Birdeye
         </LinkButton>
       </div>

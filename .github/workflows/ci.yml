@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    env:
+      NEXT_PUBLIC_SITE_URL: https://slabvault.xyz
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/slabvault
+      NEXTAUTH_SECRET: test-secret
+      ADMIN_PASSWORD: test-admin-password
+      CRON_SECRET: test-cron-secret
+      NEXT_PUBLIC_SOLANA_RPC: https://api.mainnet-beta.solana.com
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Prisma validate
+        run: npx prisma validate
+
+      - name: QA CI (lint + test + build)
+        run: npm run qa:ci
+
+      - name: Ops env contract
+        run: npm run ops:env:production

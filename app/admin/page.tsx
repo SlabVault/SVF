@@ -5,22 +5,28 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { AdminSyncPanel } from "@/components/admin-sync-panel";
+import { AdminSchemaHealthPanel } from "@/components/admin-schema-health-panel";
+import { AdminOpsDiagnosticsPanel } from "@/components/admin-ops-diagnostics-panel";
+import { getSyncStatus } from "@/lib/data-sync";
 import {
   getAdminSlabs,
   getAdminTransactions,
   isAdminApiConfigured,
 } from "@/lib/admin-server";
-import { getSiteConfig } from "@/lib/site-config";
+import { getAdminOpsStatus } from "@/lib/admin-ops-status";
+import { inspectSchemaHealth } from "@/lib/schema-health";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminPage() {
-  const site = getSiteConfig();
-  const [slabs, transactions] = await Promise.all([
+  const [slabs, transactionsResult, opsStatus, syncStatus] = await Promise.all([
     getAdminSlabs(),
     getAdminTransactions(),
+    getAdminOpsStatus(),
+    getSyncStatus(),
   ]);
-  const lastSyncAt = site.lastSyncAt ?? site.lastWalletSync ?? null;
+  const schemaHealth = await inspectSchemaHealth();
+  const transactions = transactionsResult.rows;
   const adminConfigured = isAdminApiConfigured();
   const dbConfigured = Boolean(process.env.DATABASE_URL?.trim());
 
@@ -61,6 +67,11 @@ export default async function AdminPage() {
             </Link>
           </p>
         ) : null}
+        {transactionsResult.schemaWarning ? (
+          <p className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-100">
+            {transactionsResult.schemaWarning}
+          </p>
+        ) : null}
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -83,6 +94,9 @@ export default async function AdminPage() {
           </p>
         </Card>
       </div>
+
+      <AdminSchemaHealthPanel report={schemaHealth} />
+      <AdminOpsDiagnosticsPanel status={opsStatus} />
 
       <div className="grid gap-8 lg:grid-cols-2">
         <Card className="space-y-4 p-6 bg-gradient-to-br from-vault-panel/50 to-vault-deep/50">
@@ -176,7 +190,7 @@ export default async function AdminPage() {
         </Card>
       </div>
 
-      <AdminSyncPanel lastSyncAt={lastSyncAt} />
+      <AdminSyncPanel initialStatus={syncStatus} />
 
       <Card className="space-y-4 p-6 bg-gradient-to-br from-vault-panel/50 to-vault-deep/50">
         <h2 className="font-display text-xl font-semibold">Quick Actions</h2>
@@ -188,7 +202,7 @@ export default async function AdminPage() {
             <a href="/admin/login">Admin Login</a>
           </Button>
           <Button variant="outline" className="h-auto py-4" asChild>
-            <Link href="/marketplace">View Marketplace</Link>
+            <Link href="/trade">View Trade desk</Link>
           </Button>
         </div>
       </Card>

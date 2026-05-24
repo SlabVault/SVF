@@ -5,16 +5,39 @@ export const SCRAPER_USER_AGENT =
 
 export const SCRAPER_TIMEOUT_MS = 20000;
 
+/** Max response body size for scraper HTTP fetches (5 MB). */
+export const SCRAPER_MAX_RESPONSE_BYTES = 5_000_000;
+
+export function getScraperAxiosGetOptions() {
+  return {
+    headers: { "User-Agent": SCRAPER_USER_AGENT },
+    timeout: SCRAPER_TIMEOUT_MS,
+    maxRedirects: 5,
+    maxContentLength: SCRAPER_MAX_RESPONSE_BYTES,
+    maxBodyLength: SCRAPER_MAX_RESPONSE_BYTES,
+  };
+}
+
+function isScraperResponseSizeError(error: unknown): boolean {
+  if (!axios.isAxiosError(error)) return false;
+  const message = error.message ?? "";
+  return (
+    message.includes("maxContentLength") || message.includes("maxBodyLength")
+  );
+}
+
 export async function fetchHtml(url: string): Promise<string | null> {
   try {
-    const response = await axios.get(url, {
-      headers: { "User-Agent": SCRAPER_USER_AGENT },
-      timeout: SCRAPER_TIMEOUT_MS,
-      maxRedirects: 5,
-    });
+    const response = await axios.get(url, getScraperAxiosGetOptions());
     return String(response.data);
   } catch (error) {
-    console.error(`Failed to fetch ${url}:`, error);
+    if (isScraperResponseSizeError(error)) {
+      console.error(
+        `Failed to fetch ${url}: response exceeded ${SCRAPER_MAX_RESPONSE_BYTES} byte limit`,
+      );
+    } else {
+      console.error(`Failed to fetch ${url}:`, error);
+    }
     return null;
   }
 }

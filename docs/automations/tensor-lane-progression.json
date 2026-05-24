@@ -1,0 +1,29 @@
+{
+  "name": "SVF Tensor Lane Progression",
+  "description": "Twice-weekly P2-INT Tensor/on-chain backlog item",
+  "workflow": {
+    "triggers": [
+      {
+        "type": "schedule",
+        "cron": "0 14 * * 2,4"
+      }
+    ],
+    "actions": [
+      {
+        "type": "agent",
+        "prompt": "Advance the SlabVaultFi Tensor integration lane. In docs/mvp-backlog.md find the highest-priority TODO among P2-INT-T* and P2-INT-OC* — prefer Phase 1 items (T06–T11, T19) before Phase 2/3. Implement exactly one item end-to-end. Run npm run qa:ci. Update docs/STATUS.md and mark the backlog row DONE when verified. Open a PR; do not merge. Never enable RWA_TRADE_WRITE_ENABLED, production discover flags, or mainnet program deploys without explicit human approval."
+      }
+    ],
+    "model": {
+      "id": "composer-2"
+    },
+    "memoryEnabled": true,
+    "gitConfig": {
+      "repos": [
+        {
+          "url": "https://github.com/SlabVault/SVF"
+        }
+      ]
+    }
+  }
+}

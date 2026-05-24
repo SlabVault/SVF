@@ -1,6 +1,12 @@
 # SlabVaultFi Smart Contracts
 
-This directory contains the Solana smart contracts for the SlabVaultFi marketplace.
+This directory contains the Solana smart contracts for the **vault shop** checkout lane (SOL + SVF split).
+
+For the **`/trade` Tensor aggregator** on-chain stack (TCM, fees, escrow, broker overlay), see:
+
+- `programs/` — Anchor workspace (`slabvault-broker` scaffold)
+- `lib/onchain/` — TypeScript program IDs + client stubs
+- `docs/integrations/onchain-trade-stack.md`
 
 ## Setup
 

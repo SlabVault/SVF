@@ -19,7 +19,12 @@ export function StreamEmbed({ live, embedUrl, watchUrl }: Props) {
     <section className="space-y-4 animate-fade-in-up" aria-label="Live stream">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="font-display text-lg font-semibold">Streams</h2>
-        <Badge variant={live ? "live" : "secondary"} className={`px-3 py-1 ${live ? "animate-pulse-glow" : ""}`}>
+        <Badge
+          variant={live ? "live" : "secondary"}
+          className={`px-3 py-1 ${live ? "animate-pulse-glow" : ""}`}
+          role="status"
+          aria-live="polite"
+        >
           {live ? "Live" : "Offline"}
         </Badge>
       </div>

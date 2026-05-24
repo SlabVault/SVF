@@ -6,4 +6,5 @@ export const LedgerWalletAdapter = class {};
 export const CoinbaseWalletAdapter = class {};
 export const WalletConnectWalletAdapter = class {};
 
-export default [];
+const walletAdaptersStub: unknown[] = [];
+export default walletAdaptersStub;

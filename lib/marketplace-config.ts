@@ -34,13 +34,9 @@ export function getSvfTokenMint(): string {
   );
 }
 
-export function getSolanaRpcUrl(): string {
-  return (
-    process.env.NEXT_PUBLIC_SOLANA_RPC?.trim() ||
-    process.env.SOLANA_RPC_URL?.trim() ||
-    "https://api.mainnet-beta.solana.com"
-  );
-}
+import { getSolanaRpcUrl } from "@/lib/solana-config";
+
+export { getSolanaRpcUrl };
 
 export function isAutoFulfillmentEnabled(): boolean {
   return Boolean(process.env.SERVER_WALLET_SECRET?.trim());

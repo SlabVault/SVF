@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 40" fill="none" role="img" aria-label="GRAILS">
+  <defs>
+    <linearGradient id="grails-g" x1="0" y1="0" x2="160" y2="40" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#C4B5FD"/>
+      <stop offset="1" stop-color="#7C3AED"/>
+    </linearGradient>
+  </defs>
+  <rect x="1" y="6" width="28" height="28" rx="8" fill="url(#grails-g)" opacity="0.25"/>
+  <path d="M10 28V12h4.2l5.8 9.4V12H24v16h-4.1l-5.9-9.6V28H10z" fill="url(#grails-g)"/>
+  <text x="38" y="27" font-family="system-ui,Segoe UI,sans-serif" font-size="22" font-weight="700" letter-spacing="0.08em" fill="#EDE9FE">GRAILS</text>
+</svg>

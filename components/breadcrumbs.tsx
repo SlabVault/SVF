@@ -31,7 +31,7 @@ export function Breadcrumbs({ items, className }: Props) {
             ) : (
               <Link
                 href={item.href}
-                className="text-muted transition-colors hover:text-foreground"
+                className="rounded-sm text-muted transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-vault-amber/70 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
               >
                 {item.label}
               </Link>

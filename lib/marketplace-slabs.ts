@@ -2,6 +2,7 @@ import slabsJson from "@/data/slabs.json";
 import {
   getDatabaseStatus,
   getDatabaseUrl,
+  shouldSkipDatabaseReads,
 } from "@/lib/db-connection";
 import { prisma } from "@/lib/prisma";
 import type { SlabItem } from "@/types/content";
@@ -51,7 +52,7 @@ function logDbErrorOnce(prefix: string, error: unknown) {
   }
   lastDbErrorFingerprint = fingerprint;
   lastDbErrorAt = now;
-  console.error(prefix, error);
+  console.error(`${prefix} ${message}`);
 }
 
 function toNumber(value: unknown): number {
@@ -169,6 +170,13 @@ function normalizeMarketplaceId(id: string): string {
   }
 }
 
+/**
+ * List vault treasury slabs for marketplace / trade desk.
+ *
+ * Local dev without Postgres: omit DATABASE_URL or run `npx prisma dev`.
+ * `prisma+postgres://` URLs require the Prisma Postgres dev server; when
+ * unreachable, listings fall back to `data/slabs.json` (never throws).
+ */
 export async function listMarketplaceSlabs(options?: {
   status?: string;
   grade?: string;
@@ -183,9 +191,35 @@ export async function listMarketplaceSlabs(options?: {
     };
   }
 
-  const dbStatus = await getDatabaseStatus();
+  if (shouldSkipDatabaseReads()) {
+    const dbStatus = await getDatabaseStatus();
+    return {
+      slabs: slabsFromJson(options?.status),
+      fromFallback: true,
+      dbStatus: "unreachable",
+      dbHint: dbStatus.state === "unreachable" ? dbStatus.hint : undefined,
+    };
+  }
+
+  let dbStatus;
+  try {
+    dbStatus = await getDatabaseStatus();
+  } catch (error) {
+    logDbErrorOnce("Marketplace DB status probe failed:", error);
+    return {
+      slabs: slabsFromJson(options?.status),
+      fromFallback: true,
+      dbStatus: "unreachable",
+      dbHint:
+        "Database status check failed. For local dev, omit DATABASE_URL or run `npx prisma dev`.",
+    };
+  }
+
   if (dbStatus.state === "unreachable") {
-    console.error("Marketplace DB unavailable:", dbStatus.detail);
+    logDbErrorOnce(
+      "Marketplace DB unavailable:",
+      dbStatus.detail ?? dbStatus.hint,
+    );
     return {
       slabs: slabsFromJson(options?.status),
       fromFallback: true,
@@ -206,7 +240,7 @@ export async function listMarketplaceSlabs(options?: {
       dbStatus: "connected",
     };
   } catch (error) {
-    console.error("Marketplace DB query failed:", error);
+    logDbErrorOnce("Marketplace DB query failed:", error);
     return {
       slabs: slabsFromJson(options?.status),
       fromFallback: true,
@@ -223,7 +257,7 @@ export async function getMarketplaceSlabById(
   const normalizedId = normalizeMarketplaceId(id);
   if (!normalizedId) return null;
 
-  if (getDatabaseUrl()) {
+  if (getDatabaseUrl() && !shouldSkipDatabaseReads()) {
     try {
       const slab = await prisma.slab.findUnique({
         where: { id: normalizedId },

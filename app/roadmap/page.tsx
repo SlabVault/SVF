@@ -1,26 +1,25 @@
 import type { Metadata } from "next";
 import { Card } from "@/components/ui/card";
 import { Breadcrumbs } from "@/components/breadcrumbs";
+import { LinkButton } from "@/components/link-button";
+import { buildPageMetadata } from "@/lib/seo";
 import { getSiteConfig } from "@/lib/site-config";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildPageMetadata({
   title: "Roadmap",
-  description: "SlabVaultFi development roadmap and future plans.",
-  openGraph: {
-    title: "Roadmap — SlabVaultFi",
-    description: "SlabVaultFi development roadmap and future plans.",
-    url: "/roadmap",
-  },
-};
+  description: "See the SlabVaultFi roadmap from current priorities to future milestones.",
+  path: "/roadmap",
+  keywords: ["project roadmap", "vault milestones", "community updates"],
+});
 
 export default function RoadmapPage() {
   const site = getSiteConfig();
 
   return (
-    <div className="mx-auto max-w-6xl space-y-12 px-4 py-14 sm:space-y-14 sm:px-5 sm:py-16">
+    <div className="page-shell">
       <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Roadmap", href: "/roadmap" }]} />
 
-      <header className="space-y-6 animate-fade-in-up">
+      <header className="page-header space-y-6 animate-fade-in-up">
         <div className="flex items-center gap-2">
           <span className="h-2 w-2 rounded-full bg-vault-amber animate-pulse-glow" />
           <h1 className="font-display text-4xl font-semibold tracking-tight">
@@ -65,6 +64,24 @@ export default function RoadmapPage() {
         <p className="text-sm text-muted">
           Follow our progress on X and Telegram for real-time updates on roadmap milestones.
         </p>
+        <div className="flex flex-wrap gap-3">
+          <LinkButton
+            href={site.links.twitter}
+            external
+            trackingEvent="cta_follow_x_from_roadmap"
+            trackingContext="roadmap_footer"
+          >
+            Follow on X
+          </LinkButton>
+          <LinkButton
+            href="/community"
+            variant="secondary"
+            trackingEvent="cta_open_community_from_roadmap"
+            trackingContext="roadmap_footer"
+          >
+            Join community
+          </LinkButton>
+        </div>
       </Card>
     </div>
   );

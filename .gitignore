@@ -43,3 +43,7 @@ yarn-error.log*
 next-env.d.ts
 
 /lib/generated/prisma
+
+# local orchestration state (see docs/runbooks/autonomous-orchestration.md)
+.cursor/orchestration/
+.cursor/orchestrate-enabled

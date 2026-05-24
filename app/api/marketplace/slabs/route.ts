@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 import { listMarketplaceSlabs } from "@/lib/marketplace-slabs";
 import { prisma } from "@/lib/prisma";
+import { requireWriteAuth } from "@/lib/admin-auth";
 
 /**
  * GET /api/marketplace/slabs - List purchasable slabs
@@ -35,7 +37,10 @@ export async function GET(request: Request) {
 /**
  * POST /api/marketplace/slabs - Create new slab listing (admin only)
  */
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
+  const authError = await requireWriteAuth(request);
+  if (authError) return authError;
+
   try {
     const body = await request.json();
 

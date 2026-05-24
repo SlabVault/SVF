@@ -2,11 +2,13 @@ import type { Metadata } from "next";
 import { DM_Sans, Fraunces } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
-import { SiteFooter } from "@/components/site-footer";
-import { SiteHeader } from "@/components/site-header";
+import { AppShell } from "@/components/app-shell";
 import { BackToTop } from "@/components/back-to-top";
-import { WalletProvider } from "@/components/wallet-provider";
+import { GrowthInstrumentation } from "@/components/growth-instrumentation";
+import { WalletProviderRoot } from "@/components/wallet-provider-root";
 import { getDexTokenStats } from "@/lib/dexscreener";
+import { validateEnvVars } from "@/lib/security";
+import { buildRootMetadata } from "@/lib/seo";
 import { getSiteConfig } from "@/lib/site-config";
 
 const display = Fraunces({
@@ -19,52 +21,17 @@ const sans = DM_Sans({
   subsets: ["latin"],
 });
 
-const siteUrl =
-  process.env.NEXT_PUBLIC_SITE_URL?.trim() || "http://localhost:3000";
+if (
+  process.env.NODE_ENV === "production" &&
+  process.env.VERCEL_ENV === "production"
+) {
+  const envCheck = validateEnvVars();
+  if (!envCheck.valid) {
+    throw new Error(`Invalid production environment: ${envCheck.errors.join("; ")}`);
+  }
+}
 
-export const metadata: Metadata = {
-  metadataBase: new URL(siteUrl),
-  title: {
-    default: "SlabVaultFi — Community-owned collectible vault",
-    template: "%s — SlabVaultFi",
-  },
-  description:
-    "Live gacha pulls, graded Pokémon slabs, and a transparent multisig vault. $SVF coordinates treasury growth you can track on-chain.",
-  keywords: ["SlabVaultFi", "SVF", "Pokémon", "slabs", "gacha", "vault", "Solana", "multisig", "treasury", "collectibles"],
-  openGraph: {
-    type: "website",
-    locale: "en_US",
-    siteName: "SlabVaultFi",
-    title: "SlabVaultFi — Community-owned collectible vault",
-    description:
-      "Live gacha pulls, graded Pokémon slabs, and a transparent multisig vault.",
-    url: "/",
-    images: [
-      {
-        url: "/opengraph-image",
-        width: 1200,
-        height: 630,
-        alt: "SlabVaultFi",
-      },
-    ],
-  },
-  twitter: {
-    card: "summary_large_image",
-    creator: "@SlabVaultFi",
-    site: "@SlabVaultFi",
-    title: "SlabVaultFi — Community-owned collectible vault",
-    description:
-      "Live gacha pulls, graded Pokémon slabs, and a transparent multisig vault.",
-    images: ["/opengraph-image"],
-  },
-  icons: {
-    icon: [
-      { url: "/icon.png", type: "image/png", sizes: "32x32" },
-      { url: "/favicon.ico", sizes: "any" },
-    ],
-    apple: [{ url: "/apple-icon.png", type: "image/png", sizes: "180x180" }],
-  },
-};
+export const metadata: Metadata = buildRootMetadata();
 
 export default async function RootLayout({
   children,
@@ -78,11 +45,9 @@ export default async function RootLayout({
     <html
       lang="en"
       data-scroll-behavior="smooth"
+      suppressHydrationWarning
       className={`dark ${display.variable} ${sans.variable} h-full scroll-smooth antialiased`}
     >
-      <head>
-        <Script src="https://plugin.jup.ag/plugin-v1.js" data-preload defer />
-      </head>
       <body className="min-h-full bg-background text-foreground font-sans">
         <a
           href="#main"
@@ -90,20 +55,17 @@ export default async function RootLayout({
         >
           Skip to content
         </a>
-        <WalletProvider>
-          <div className="flex min-h-full flex-col">
-            <SiteHeader
-              brandName={site.brandName}
-              ticker={site.ticker}
-              svfPriceUsd={tokenStats?.priceUsd ?? null}
-            />
-            <main id="main" className="flex-1">
-              {children}
-            </main>
-            <SiteFooter site={site} />
-          </div>
-        </WalletProvider>
+        <WalletProviderRoot>
+          <AppShell site={site} svfPriceUsd={tokenStats?.priceUsd ?? null}>
+            {children}
+          </AppShell>
+        </WalletProviderRoot>
         <BackToTop />
+        <GrowthInstrumentation />
+        <Script
+          src="https://plugin.jup.ag/plugin-v1.js"
+          strategy="lazyOnload"
+        />
       </body>
     </html>
   );
