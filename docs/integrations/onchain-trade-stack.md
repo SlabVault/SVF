@@ -394,12 +394,83 @@ Patterns follow [tensor-foundation/SDK-examples/marketplace](https://github.com/
 
 **Production:** keep `TENSOR_TRADE_WRITE_ENABLED=false`. Staging-only wallet flows after devnet/mainnet-beta fill spike (TC-084).
 
+### Buy BFF — `buildFillTransaction` query matrix {#buy-bff-buildfilltransaction-query-matrix}
+
+**Route:** `GET /api/trade/tx/buy` (`app/api/trade/tx/buy/route.ts`)  
+**SDK builder:** `buildFillTransaction()` in `lib/onchain/clients/tensor-tcm.ts` → `buySingleListing` in `tensor-tcm-sdk.ts`  
+**M3 staging dry-run:** follow [trade-staging-checklist.md — Staging verification steps § 3 (Buy dry-run)](../trade-staging-checklist.md#staging-verification-steps) after pre-flight + broker PDA checks; record evidence in [staging-first-fill-record-template.md](./staging-first-fill-record-template.md).
+
+#### Server gates (order)
+
+| # | Check | Env / module | Failure |
+|---|-------|--------------|---------|
+| 1 | Trusted origin (optional) | `TENSOR_TX_REQUIRE_TRUSTED_ORIGIN=true` → `requireTrustedTensorTxOrigin` | `403` / `TRADE_TX_ORIGIN_REJECTED` |
+| 2 | Write gate | `TENSOR_TRADE_WRITE_ENABLED=true` (staging only) → `assertTensorTradeWriteEnabled` | `503` / write disabled |
+| 3 | Query validation | `app/api/trade/tx/buy/route.ts` | `400` missing params |
+| 4 | Wallet challenge (optional) | `TRADE_TX_REQUIRE_WALLET_CHALLENGE=true` → `requireTradeTxWalletChallenge` | `401` / challenge required |
+| 5 | Path branch | `writePath` → REST proxy or SDK fill | REST: `503` if no `TENSOR_API_KEY`; SDK: `buildFillTransaction` |
+
+#### Query param matrix
+
+| Query param | Required | `writePath=sdk` (M3 default) | `writePath=rest` | Maps to `buildFillTransaction` |
+|-------------|----------|------------------------------|------------------|--------------------------------|
+| `buyer` | **Yes** | Buyer wallet (fee payer + signer) | Same | `buyer` |
+| `mint` | **Yes** | NFT mint | Same | `mint` |
+| `maxPrice` | **Yes** | Max lamports buyer will pay | Same (as `maxPrice` to Tensor REST) | `maxAmountLamports` |
+| `owner` | REST: **yes**; SDK: **one of** `owner` \| `listState` | Seller wallet when known from enrichment | Seller wallet for Tensor REST `tx/buy` | `owner` (optional when `listState` set) |
+| `listState` | No | TCM list-state PDA; validated via `@tensor-oss/tcomp-sdk` | Ignored (REST path) | `listState` |
+| `writePath` | No | **`sdk`** — UI always sets this (`use-tensor-buy.ts`) | `rest` or `tensor_rest` | Selects SDK vs Tensor REST proxy |
+| `challengeId` | When wallet challenge on | Echo from `GET /api/trade/tx/challenge` | Same | — |
+| `walletSignature` | When wallet challenge on | Base58 signature over challenge | Same | — |
+
+**`writePath` default** (`resolveBuyWritePath` in `lib/onchain/tensor-tx-bff.ts`): explicit `sdk` → SDK; `rest` / `tensor_rest` → Tensor REST when `TENSOR_API_KEY` is set; otherwise SDK. GRAILS buy UI always passes `writePath=sdk` so staging dry-runs hit `buildFillTransaction` even when a read API key is configured.
+
+#### SDK fill prerequisites (M3)
+
+Before step 3 in the [staging checklist](../trade-staging-checklist.md#staging-verification-steps):
+
+1. [Pre-flight](../trade-staging-checklist.md#pre-flight) — partner ingest + Tensor seller enrichment (`tensorEnrichment.enrichedSeller > 0` or ops-seeded `sellerWallet` / `listState`).
+2. [M3 prep — aggregation alignment](../trade-staging-checklist.md#m3-prep--aggregation-alignment) — `canBuyOnChain` gates pass on item detail.
+3. [Broker fee PDA verification](../trade-staging-checklist.md#verification-before-first-mainnet-fill) — `previewFeeSplit().brokerPubkey` aligned; buy simulation must not fail for unregistered broker.
+4. Staging env — `TENSOR_TRADE_WRITE_ENABLED=true`, `NEXT_PUBLIC_TENSOR_TRADE_WRITE_ENABLED=true`, `SOLANA_RPC_URL` reachable; keep `TENSOR_TX_REQUIRE_TRUSTED_ORIGIN` off until step 5 optional drill.
+
+#### Example staging dry-run URLs
+
+SDK path (matches UI):
+
+```
+GET /api/trade/tx/buy?buyer=<BUYER>&mint=<MINT>&maxPrice=<LAMPORTS>&owner=<SELLER>&writePath=sdk
+```
+
+SDK path with `listState` only (owner resolved from chain):
+
+```
+GET /api/trade/tx/buy?buyer=<BUYER>&mint=<MINT>&maxPrice=<LAMPORTS>&listState=<LIST_STATE_PDA>&writePath=sdk
+```
+
+**Success:** `200` with `{ writePath: "sdk", txs: [{ tx, blockhash, lastValidBlockHeight }] }` — wallet signs locally; route does **not** broadcast.
+
+**Common failures:** `400` missing `owner`/`listState` on SDK path; `503` write gate off; simulation errors for missing broker PDA (see [broker verification](../trade-staging-checklist.md#verification-before-first-mainnet-fill)).
+
+#### `buildFillTransaction` internals
+
+| Input | Source | Notes |
+|-------|--------|-------|
+| `connection` | `getSolanaConnection()` | `SOLANA_RPC_URL` |
+| `buyer`, `mint`, `maxAmountLamports` | Query params | Parsed via `parsePublicKeyParam` / `parseLamportsParam` |
+| `owner` | Query or derived | Optional when `listState` provided |
+| `listState` | Query | Fetched + mint-checked via tcomp-sdk when set |
+| `takerBroker` | `getSvfBrokerPubkey()` | Not a query param — always SVF broker on fill ix |
+
+Explicit Fees-program account metas on fill remain **TC-075** (`tensor-fees.ts` stub) after broker PDA ops sign-off.
+
 ---
 
 ## Changelog
 
 | Date | Change |
 |------|--------|
+| 2026-05-24 | Buy BFF query param matrix + M3 staging dry-run cross-links (`buildFillTransaction`, `writePath=sdk`) |
 | 2026-05-23 | Aggregate ingest → buy-path enrichment: `mergeAllTradeListings`, `alternateVenueAsks`, `sellerWallet`/`listState` before TCM fill |
 | 2026-05-22 | Linked `previewFeeSplit` / `fees.ts` helpers to staging checklist engineering preview |
 | 2026-05-22 | Linked broker PDA ops checklist in `trade-staging-checklist.md` (operator-blocked verification) |

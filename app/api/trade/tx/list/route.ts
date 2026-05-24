@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 import { buildListTransaction } from "@/lib/onchain/clients/tensor-tcm";
 import {
-  assertTensorTradeWriteEnabled,
+  requireTensorTradeWriteEnabled,
   requireTrustedTensorTxOrigin,
   fetchTensorApiJson,
   getLatestBlockhashContext,
@@ -30,7 +30,8 @@ export async function GET(request: Request) {
   try {
     const originError = requireTrustedTensorTxOrigin(request);
     if (originError) return originError;
-    assertTensorTradeWriteEnabled();
+    const writeError = requireTensorTradeWriteEnabled(request);
+    if (writeError) return writeError;
 
     const params = new URL(request.url).searchParams;
     const ownerParam = params.get("owner");

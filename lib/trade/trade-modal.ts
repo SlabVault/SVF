@@ -135,7 +135,59 @@ export function isTradeTxWalletChallengeRequiredClient(): boolean {
   );
 }
 
+/** BFF jsonError code when server write gate is off (expected in production). */
+export const TRADE_WRITE_DISABLED_BFF_CODE = "TRADE_WRITE_DISABLED";
+
 /** Native tooltip copy when write actions are disabled in the trade panel. */
 export function tradeWriteDisabledTooltip(): string {
-  return "On-chain buy disabled until staging ops enable writes and Tensor seller enrichment is present on the listing.";
+  return "On-chain writes are off (prod default). Use partner checkout, or enable staging write flags after broker PDA + seller enrichment.";
+}
+
+/** User-facing copy when BFF returns TRADE_WRITE_DISABLED (expected prod / staging flag mismatch). */
+export function tradeWriteDisabledUserMessage(recoveryHint?: string | null): string {
+  const hint = recoveryHint?.trim();
+  if (hint) return hint;
+  return "On-chain buys are staging-only until ops enable write flags. Use partner checkout below.";
+}
+
+/** User-facing copy for RPC / Tensor misconfig 503s — not the expected write-off path. */
+export function tradeTxServiceMisconfigMessage(serverError?: string | null): string {
+  const error = serverError?.trim() ?? "";
+  if (/SOLANA_RPC|solana rpc/i.test(error)) {
+    return "Solana RPC is not configured for trade transactions. Use partner checkout or try again later.";
+  }
+  if (/Tensor REST|Tensor API|Tensor trade/i.test(error)) {
+    return "Tensor trade service is not fully configured. Use partner checkout or try again later.";
+  }
+  return "Trade transaction service unavailable. Use partner checkout or try again later.";
+}
+
+export type TradeTxBffErrorPayload = {
+  error?: string;
+  code?: string;
+  recoveryHint?: string;
+  details?: { tradeWriteEnabled?: boolean };
+};
+
+/** Map BFF trade-tx JSON errors to honest UI copy (write-off vs misconfig). */
+export function resolveTradeTxBffErrorMessage(payload: TradeTxBffErrorPayload): string {
+  if (
+    payload.code === TRADE_WRITE_DISABLED_BFF_CODE ||
+    payload.details?.tradeWriteEnabled === false ||
+    /write path is disabled/i.test(payload.error ?? "")
+  ) {
+    return tradeWriteDisabledUserMessage(payload.recoveryHint);
+  }
+  if (payload.error?.trim()) {
+    return tradeTxServiceMisconfigMessage(payload.error);
+  }
+  return tradeTxServiceMisconfigMessage();
+}
+
+export function isTradeWriteDisabledBffPayload(payload: TradeTxBffErrorPayload): boolean {
+  return (
+    payload.code === TRADE_WRITE_DISABLED_BFF_CODE ||
+    payload.details?.tradeWriteEnabled === false ||
+    /write path is disabled/i.test(payload.error ?? "")
+  );
 }

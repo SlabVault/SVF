@@ -175,7 +175,7 @@ Before first fill, confirm `previewFeeSplit().brokerPubkey` matches the register
 
 1. **Read path** — Open `/trade/c/collector-crypt`; listings show floor/ask from partner ingest; item detail shows seller wallet + list state when Tensor enrichment matched.
 2. **Enrichment** — With `TENSOR_API_KEY` + `TENSOR_CC_COLLECTION_SLUGS` set, partner list API includes `tensorEnrichment.enrichedSeller > 0` for active CC inventory on Tensor.
-3. **Buy dry-run** — Connect wallet on staging; click Buy on an enriched listing; confirm `/api/trade/tx/buy` returns a serialized tx (does not auto-send).
+3. **Buy dry-run** — Connect wallet on staging; click Buy on an enriched listing; confirm `/api/trade/tx/buy` returns a serialized tx (does not auto-send). Query param matrix, `writePath=sdk` vs REST, and M3 gate order: [onchain-trade-stack.md § Buy BFF — buildFillTransaction query matrix](./integrations/onchain-trade-stack.md#buy-bff-buildfilltransaction-query-matrix). Pre-reqs: [M3 prep](#m3-prep--aggregation-alignment) + [broker PDA verification](#verification-before-first-mainnet-fill) steps 1–4.
 4. **Write gate** — With `TENSOR_TRADE_WRITE_ENABLED=false`, buy button shows disabled state / modal fallback message.
 5. **Origin gate (optional)** — With `TENSOR_TX_REQUIRE_TRUSTED_ORIGIN=true`, in-app buy dry-run succeeds; cross-origin GET to `/api/trade/tx/buy` returns `TRADE_TX_ORIGIN_REJECTED`.
 6. **Footer ticker** — `/trade` footer shows aggregate 24h vol (sum of per-collection Tensor statsV2) when API key is configured.

@@ -94,7 +94,7 @@ test("buy route requires wallet challenge when enabled", async () => {
     },
     async () => {
       const response = await buyGet(
-        new Request(
+        apiWriteRequest(
           `http://localhost/api/trade/tx/buy?buyer=${buyer}&mint=${mint}&owner=${owner}&maxPrice=1000000000&writePath=sdk`,
         ),
       );
@@ -118,7 +118,7 @@ test("list route requires wallet challenge when enabled", async () => {
     },
     async () => {
       const response = await listGet(
-        new Request(
+        apiWriteRequest(
           `http://localhost/api/trade/tx/list?owner=${owner}&mint=${mint}&price=1000000000&writePath=sdk`,
         ),
       );
@@ -159,6 +159,35 @@ test("buy route accepts signed challenge before building tx", async () => {
 
       assert.equal(response.status, 200);
       assert.equal(body.writePath, "sdk");
+    },
+  );
+});
+
+test("buy route requires wallet challenge when origin gate on and trusted origin", async () => {
+  const buyer = Keypair.generate().publicKey.toBase58();
+  const mint = Keypair.generate().publicKey.toBase58();
+  const owner = Keypair.generate().publicKey.toBase58();
+
+  await withTemporaryEnv(
+    {
+      TENSOR_TX_REQUIRE_TRUSTED_ORIGIN: "true",
+      TENSOR_TRADE_WRITE_ENABLED: "true",
+      TRADE_TX_REQUIRE_WALLET_CHALLENGE: "true",
+      NEXT_PUBLIC_SITE_URL: TRUSTED_LOCAL_ORIGIN,
+      NODE_ENV: "test",
+      SOLANA_RPC_URL: "http://127.0.0.1:8899",
+    },
+    async () => {
+      const response = await buyGet(
+        apiWriteRequest(
+          `http://localhost/api/trade/tx/buy?buyer=${buyer}&mint=${mint}&owner=${owner}&maxPrice=1000000000&writePath=sdk`,
+        ),
+      );
+      const body = await response.json();
+
+      assert.equal(response.status, 400);
+      assert.equal(body.code, "TRADE_TX_WALLET_CHALLENGE_REQUIRED");
+      assert.notEqual(body.code, "TRADE_TX_ORIGIN_REJECTED");
     },
   );
 });
@@ -322,10 +351,18 @@ test("buy route returns 503 when write disabled before wallet challenge", async 
           `http://localhost/api/trade/tx/buy?buyer=${buyer}&mint=${mint}&owner=${owner}&maxPrice=1000000000`,
         ),
       );
-      const body = await response.json();
+      const body = (await response.json()) as {
+        error?: string;
+        code?: string;
+        details?: { tradeWriteEnabled?: boolean };
+        recoveryHint?: string;
+      };
 
       assert.equal(response.status, 503);
+      assert.equal(body.code, "TRADE_WRITE_DISABLED");
+      assert.equal(body.details?.tradeWriteEnabled, false);
       assert.match(String(body.error ?? ""), /TENSOR_TRADE_WRITE_ENABLED/);
+      assert.match(String(body.recoveryHint ?? ""), /staging/i);
     },
   );
 });
@@ -421,9 +458,15 @@ test("buy route passes trusted origin then enforces write dry-run", async () => 
       const response = await buyGet(
         apiWriteRequest(`http://localhost/api/trade/tx/buy?${params.toString()}`),
       );
-      const body = (await response.json()) as { error?: string };
+      const body = (await response.json()) as {
+        error?: string;
+        code?: string;
+        details?: { tradeWriteEnabled?: boolean };
+      };
 
       assert.equal(response.status, 503);
+      assert.equal(body.code, "TRADE_WRITE_DISABLED");
+      assert.equal(body.details?.tradeWriteEnabled, false);
       assert.match(body.error ?? "", /TENSOR_TRADE_WRITE_ENABLED/);
     },
   );
@@ -525,10 +568,16 @@ test("untrusted origin reaches write dry-run when origin gate off", async () => 
           headers: { origin: "https://evil.com" },
         }),
       );
-      const body = (await response.json()) as { error?: string; code?: string };
+      const body = (await response.json()) as {
+        error?: string;
+        code?: string;
+        details?: { tradeWriteEnabled?: boolean };
+      };
 
       assert.equal(response.status, 503);
       assert.notEqual(body.code, "TRADE_TX_ORIGIN_REJECTED");
+      assert.equal(body.code, "TRADE_WRITE_DISABLED");
+      assert.equal(body.details?.tradeWriteEnabled, false);
       assert.match(body.error ?? "", /TENSOR_TRADE_WRITE_ENABLED/);
     },
   );
@@ -776,16 +825,36 @@ test("TENSOR_TRADE_WRITE_ENABLED=false returns 503 on all 5 tx routes without ca
 
         for (const { name, run } of cases) {
           const response = await run();
-          const body = (await response.json()) as { error?: string };
+          const body = (await response.json()) as {
+            error?: string;
+            code?: string;
+            details?: { tradeWriteEnabled?: boolean };
+            recoveryHint?: string;
+          };
           assert.equal(
             response.status,
             503,
             `${name} route should return 503 when write disabled`,
           );
+          assert.equal(
+            body.code,
+            "TRADE_WRITE_DISABLED",
+            `${name} route should return TRADE_WRITE_DISABLED code`,
+          );
+          assert.equal(
+            body.details?.tradeWriteEnabled,
+            false,
+            `${name} route should set tradeWriteEnabled=false`,
+          );
           assert.match(
             body.error ?? "",
             /TENSOR_TRADE_WRITE_ENABLED/,
             `${name} route should document write gate`,
+          );
+          assert.match(
+            String(body.recoveryHint ?? ""),
+            /staging/i,
+            `${name} route should include staging recovery hint`,
           );
         }
 

@@ -1,7 +1,7 @@
 # GRAILS milestone status (M0–M6)
 
-**Last updated:** 2026-05-23 (segment lane M3 prep alignment)  
-**Sources:** [grails-step-by-step-plan.md](./grails-step-by-step-plan.md), codebase audit, [tensor-tradesite-copy-checklist.md](./tensor-tradesite-copy-checklist.md), [trade-staging-checklist.md](../trade-staging-checklist.md), [m3-recovery-status-2026-05-22.md](./m3-recovery-status-2026-05-22.md)  
+**Last updated:** 2026-05-24 (M5 compare honesty alignment)  
+**Sources:** [grails-step-by-step-plan.md](./grails-step-by-step-plan.md), codebase audit, [tensor-tradesite-copy-checklist.md](./tensor-tradesite-copy-checklist.md), [trade-staging-checklist.md](../trade-staging-checklist.md), [m3-recovery-status-2026-05-22.md](./m3-recovery-status-2026-05-22.md), [partner-aggregation-quickest-path.md](./partner-aggregation-quickest-path.md)  
 **Rule:** One segment per session — no parallel implementation on the same trade lane.
 
 ---
@@ -10,7 +10,7 @@
 
 **M0–M1 done** (2026-05-21). **Current focus:** Segment 3 (M2 desk UX) + M3 prep ([partner-aggregation-quickest-path.md](./partner-aggregation-quickest-path.md)). M3 on-chain writes remain **partial** — BFF/SDK wired; verified staging fill + broker PDA are operator blockers.
 
-Headline gaps vs full GRAILS vision remain **M1 prod ingest**, **M2 UX parity**, **M3 verified staging fill**, **M4 cross-venue best-price**, **M5 cert compare**, **M6 multichain ingest**.
+Headline gaps vs full GRAILS vision remain **M1 prod ingest**, **M2 UX parity**, **M3 verified staging fill**, **M4 cross-venue best-price**, **M5 cert index/resolver** (item compare strip partial live), **M6 multichain ingest**.
 
 ---
 
@@ -23,7 +23,7 @@ Headline gaps vs full GRAILS vision remain **M1 prod ingest**, **M2 UX parity**,
 | **M2 — Trade desk UX shell** | **Partial** (~55%) | Tensor template + pro 3-column desk; grader/grade/price/q URL filters; BIDS tab live; venue badges; sweep/buy/list panel; stats ribbon + footer ticker (partial); item prev/next | ⌘K collections-only (no cert/mint); OFFERS/ORDERS/TRAITS/HODLERS content stubbed; grid density + toolbar search; copy checklist P0; footer 24h vol · Lite/Pro · TPS | Segment 2 data; tensor.trade side-by-side screenshots |
 | **M3 — On-chain Solana writes** | **Partial** | BFF routes buy/list/delist/bid/cancel-bid; SDK wiring; write gate; buy/list/delist modals + hooks; portfolio LIST/DELIST; collection BIDS; wallet open-bids read; staging checklist doc | Verified staging mainnet fill; Postgres orders/idempotency; CSRF on write routes; broker PDA | Staging env + funded wallet; broker PDA ops |
 | **M4 — Cross-venue depth & vault listings** | **Mostly missing** | Venue badges; Tensor enrichment merge on partner rows | Best-price graph; vault TCM list; batch sweep | M3 write path; `TENSOR_API_KEY`; vault wallet |
-| **M5 — Cert-unified compare index** | **Mostly missing** | Cert-first route; FMV row stub | Dedupe + compare view; `GET /api/trade/resolve?cert=` | M1 + M4 |
+| **M5 — Cert-unified compare index** | **Partial** | Cert-first route; item COMPARE tab + `ItemVenueCompareStrip` when ≥2 `alternateVenueAsks` from merge graph ([partner-aggregation-quickest-path.md](./partner-aggregation-quickest-path.md)); FMV row stub | Unified cert index; `GET /api/trade/resolve?cert=`; ⌘K cert/mint search; `/trade/compare/[cert]` route; provenance block — see [m3-recovery-status-2026-05-22.md](./m3-recovery-status-2026-05-22.md) § Alignment update | M1 + M4 depth |
 | **M6 — Multichain partners (Phase 3)** | **Mostly missing** | Registry preview rows + landing copy for Beezie (Base) and Courtyard (Polygon) | Adapters + chain filter + ingest rows | Partner APIs; M5 cert dedupe across chains |
 
 ---
@@ -48,7 +48,7 @@ Headline gaps vs full GRAILS vision remain **M1 prod ingest**, **M2 UX parity**,
 | M2 | Browser audit P0/P1 closed vs tensor.trade CC (~55% per copy checklist) | **Partial** |
 | M3 | Devnet/staging buy tx e2e; portfolio shows owned asset | **Not verified** |
 | M4 | Two venues same collection; best-price tile correct | **Not started** |
-| M5 | Cert search returns multi-venue rows | **Not started** |
+| M5 | Cert search returns multi-venue rows | **Partial** — item strip live when merge yields ≥2 asks; index resolver + palette cert search still M5 Soon |
 | M6 | Beezie/Courtyard rows in index with chain badge | **Not started** |
 
 ---

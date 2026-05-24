@@ -114,7 +114,7 @@ const COLLECTION_TABS: { id: CollectionDeskTab; label: string; soon?: boolean }[
   { id: "orders", label: "ORDERS" },
   { id: "traits", label: "TRAITS" },
   { id: "holders", label: "HODLERS" },
-  { id: "collection_bid", label: "COLLECTION BID" },
+  { id: "collection_bid", label: "COLLECTION BID", soon: true },
 ];
 
 function resolveEmptyListingsDescription({

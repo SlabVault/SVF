@@ -14,11 +14,10 @@ import { PlatformBadge } from "@/components/platform-badge";
 import { TradeDeskShell } from "@/components/trade/trade-desk-shell";
 import { TradeMobileActionBar } from "@/components/trade/trade-mobile-action-bar";
 import {
-  mapTradeListingToTensorNft,
   resolveOnChainBuyBlockReason,
   tradeListingHasOnChainBuyMetadata,
 } from "@/components/trade/tensor/map-listing";
-import { resolvesOnChainSettlement, useTensorBuy } from "@/components/trade/tensor/use-tensor-buy";
+import { resolvesOnChainSettlement } from "@/components/trade/tensor/use-tensor-buy";
 import {
   resolveTradeListingPartnerCheckoutUrl,
   tradeListingShowsPartnerBuyLink,
@@ -192,8 +191,10 @@ function ItemVenueCompareStrip({
                     target="_blank"
                     rel="noopener noreferrer"
                     className="rounded border border-[#333] bg-[var(--trade-surface)] px-2 py-1 text-[9px] font-bold uppercase tracking-wide text-[var(--trade-muted)] hover:border-[var(--tensor-accent)] hover:text-[var(--tensor-white)]"
+                    data-growth-event="cta_trade_partner_deep_link"
+                    data-growth-context={`trade_compare_partner:${listing.id}:${row.partner}`}
                   >
-                    {VENUE_LABELS[row.partner as TradePartnerId] ?? row.partner} site
+                    {VENUE_LABELS[row.partner as TradePartnerId] ?? row.partner} site ↗
                   </a>
                 ) : null}
               </div>
@@ -210,14 +211,19 @@ function ItemCompareEmpty() {
     <Card
       className="space-y-2 border-[#333] bg-[var(--trade-surface)] p-4"
       role="status"
-      aria-label="Compare venues by cert"
+      aria-label="Compare venues — item compare live at 2+ asks; cert-unified index in M5 Soon"
     >
       <h2 className="text-[10px] font-bold uppercase tracking-wide text-[var(--trade-muted)]">
         Compare venues
       </h2>
-      <p className="text-xs leading-relaxed text-[var(--trade-muted)]">
-        No alternate venue asks for this cert yet. When the same graded card lists on CC
-        and Phygitals, both asks appear here with GRAILS and partner checkout links.
+      <p className="text-[11px] leading-snug text-[var(--trade-muted)]">
+        No alternate venue asks for this cert yet. Item compare is live when 2+ asks exist
+        (CC · Phygitals · treasury) with GRAILS and partner checkout links.
+      </p>
+      <p className="text-[11px] leading-snug text-[var(--trade-muted)]">
+        Cert-unified compare index and mint search ships in{" "}
+        <span className="font-semibold text-[var(--tensor-white)]">M5</span>
+        <span className="ml-1 text-[9px] font-normal normal-case">(Soon)</span>.
       </p>
     </Card>
   );
@@ -412,16 +418,11 @@ export function TradeItemDetailClient({
   const [offerOpen, setOfferOpen] = useState(false);
   const [listOpen, setListOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<ItemTab>("overview");
-  const { buy, pending, canBuyOnChain } = useTensorBuy();
 
   const partnerBadge = PARTNER_BADGE[collection.partner];
   const venuePartner = resolveListingVenuePartner(listing, collection.slug);
   const traits = traitRows(listing);
   const listedUsd = formatListedAskUsd(listing.askSol, solPriceUsd);
-  const nft = useMemo(
-    () => mapTradeListingToTensorNft(listing, collection.slug),
-    [listing, collection.slug],
-  );
   const onChainMint = resolveTradeListingMint(listing) ?? listing.id;
 
   const onChainSettlement = resolvesOnChainSettlement(listing, collection.slug);
@@ -452,19 +453,10 @@ export function TradeItemDetailClient({
   const activityEvents =
     itemActivity.length > 0 ? itemActivity : activity.events.slice(0, 12);
 
-  const openBuy = async () => {
+  const openBuy = () => {
     if (!connected) {
       setVisible(true);
       return;
-    }
-    if (canBuyOnChain(nft, listing, collection.slug)) {
-      try {
-        await buy(nft, collection.slug);
-        return;
-      } catch {
-        setBuyOpen(true);
-        return;
-      }
     }
     setBuyOpen(true);
   };
@@ -552,16 +544,11 @@ export function TradeItemDetailClient({
                   <Button
                     type="button"
                     className="tensor-btn-primary h-9 w-full text-xs font-bold uppercase tracking-wide"
-                    disabled={pending}
-                    onClick={() => void openBuy()}
+                    onClick={openBuy}
                     data-growth-event="cta_trade_buy_now"
                     data-growth-context={`trade_item:${listing.id}`}
                   >
-                    {pending
-                      ? "Signing…"
-                      : connected
-                        ? "BUY NOW"
-                        : "Connect wallet to buy"}
+                    {connected ? "BUY NOW" : "Connect wallet to buy"}
                   </Button>
                 ) : partnerPrimaryCheckout && partnerCheckoutUrl ? (
                   <Button
@@ -718,7 +705,7 @@ export function TradeItemDetailClient({
         priceSol={listing.askSol}
         connected={connected}
         onConnect={() => setVisible(true)}
-        onBuy={() => void openBuy()}
+        onBuy={openBuy}
         onList={openList}
         suggestedListPriceSol={collectionStats.floorSol ?? listing.askSol}
         listingId={listing.id}

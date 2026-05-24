@@ -7,6 +7,7 @@ import { PlatformBadge } from "@/components/platform-badge";
 import { TradeModalShell } from "@/components/trade/trade-modal-shell";
 import { mapTradeListingToTensorNft, resolveOnChainBuyBlockReason } from "@/components/trade/tensor/map-listing";
 import { resolvesOnChainSettlement, useTensorBuy } from "@/components/trade/tensor/use-tensor-buy";
+import { isTradeWriteDisabledRouteError } from "@/components/trade/tensor/use-tensor-tx";
 import { WalletButton } from "@/components/wallet-button";
 import { Button } from "@/components/ui/button";
 import { formatUsd } from "@/lib/format";
@@ -21,6 +22,8 @@ import {
   tradeListingShowsPartnerBuyLink,
   tradeListingUsesPartnerSiteSettlement,
   tradeWriteDisabledTooltip,
+  tradeWriteDisabledUserMessage,
+  tradeTxServiceMisconfigMessage,
   type TradeModalListing,
 } from "@/lib/trade/trade-modal";
 import { slugToPartnerPlatform, resolvePartnerDeepLink } from "@/lib/trade/partner-deep-link";
@@ -56,6 +59,7 @@ export function BuyNowModal({ open, onClose, listing, collectionSlug, solPriceUs
   const writeEnabled = isTradeWriteEnabledClient();
   const { buy, pending, canBuyOnChain } = useTensorBuy();
   const [error, setError] = useState<string | null>(null);
+  const [writeDisabledFromBff, setWriteDisabledFromBff] = useState(false);
   const nft = useMemo(
     () => mapTradeListingToTensorNft(listing, collectionSlug),
     [listing, collectionSlug],
@@ -86,7 +90,10 @@ export function BuyNowModal({ open, onClose, listing, collectionSlug, solPriceUs
       : `${listing.askSol} ◎`;
 
   useEffect(() => {
-    if (!open) setError(null);
+    if (!open) {
+      setError(null);
+      setWriteDisabledFromBff(false);
+    }
   }, [open]);
 
   const confirmDisabled =
@@ -198,6 +205,11 @@ export function BuyNowModal({ open, onClose, listing, collectionSlug, solPriceUs
               {connected && writeEnabled && onChainBlockReason ? (
                 <p className="text-center text-[10px] text-[var(--trade-muted)]" role="status">
                   {onChainBlockReason} Use partner checkout below when settlement is off-chain.
+                </p>
+              ) : null}
+              {writeDisabledFromBff && partnerCheckoutUrl ? (
+                <p className="text-center text-[10px] text-[var(--trade-muted)]" role="status">
+                  Server write gate is off (expected in production). Use partner checkout below.
                 </p>
               ) : null}
             </>

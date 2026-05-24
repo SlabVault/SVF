@@ -11,7 +11,7 @@
 - [phygitals-collectorcrypt.md](./phygitals-collectorcrypt.md)
 - [tensor-repo-vendoring.md](./tensor-repo-vendoring.md)
 - [trade-architecture.md](../trade-architecture.md)
-- [m3-recovery-status-2026-05-22.md](./m3-recovery-status-2026-05-22.md) — § Alignment update (ingest, buy gates, Prisma proxy dev)
+- [m3-recovery-status-2026-05-22.md](./m3-recovery-status-2026-05-22.md) — § Alignment update (ingest, `alternateVenueAsks` + item strip, buy gates, Prisma proxy dev)
 - [staging-first-fill-record-template.md](./staging-first-fill-record-template.md) — M3 staging first-fill record
 
 ---
@@ -31,7 +31,7 @@
 
 **Off request path:** `npm run sync:discover` batch job may scrape CC accounts — that is OK for cron/sync; it does not run on every SSR load.
 
-**Aggregate desk (`/trade/all`):** `lib/trade/all-listings.ts` — `loadAllTradeListings()` parallel-loads CC, Phygitals, treasury, and preview venues; `mergeAllTradeListings()` flattens via `dedupePartnerTradeListings()` (lowest ask wins; losing partner ask preserved on `alternateVenueAsks`). Nav stats via `buildAllListingsAggregateStats`. Magic Eden depth requires `TENSOR_API_KEY`; Beezie/Courtyard preview collections stay empty by design.
+**Aggregate desk (`/trade/all`):** `lib/trade/all-listings.ts` — `loadAllTradeListings()` parallel-loads CC, Phygitals, treasury, and preview venues; `mergeAllTradeListings()` flattens via `dedupePartnerTradeListings()` (lowest ask wins; losing partner ask preserved on `alternateVenueAsks`). Nav stats via `buildAllListingsAggregateStats`. Magic Eden depth requires `TENSOR_API_KEY`; Beezie/Courtyard preview collections stay empty by design. Item-page venue compare when deduped rows collide — see [§ M5 compare honesty](#m5-compare-honesty--item-strip-vs-cert-unified-index) below.
 
 | Concern | Tensor API required? | What actually powers it |
 |---------|---------------------|-------------------------|
@@ -232,7 +232,7 @@ Merged plan across **Worker 1 (data plane)** and **Worker 2 (settlement/product)
 
 ### Next week
 
-- **Worker 1:** Harden cross-venue merge (`alternateVenueAsks` on cert/mint dedupe; item-page compare strip still open), `ExternalListing` Postgres in staging, enrichment metrics (`tensorEnrichment.enrichedSeller`) visible in BFF for ops tuning. Helius cert↔mint backfill for CC collection mint.
+- **Worker 1:** Harden cross-venue merge (`alternateVenueAsks` on cert/mint dedupe; item-page `ItemVenueCompareStrip` live — cert-unified index + ⌘K mint search still M5 Soon), `ExternalListing` Postgres in staging, enrichment metrics (`tensorEnrichment.enrichedSeller`) visible in BFF for ops tuning. Helius cert↔mint backfill for CC collection mint.
 - **Worker 2:** Ops completes broker fee PDA checklist (or documents partner co-sign blocker); eng lands TC-075 fee account metas. Whitelist operator tx for CC mint. Phygitals **tcomp** fill spike on one cNFT — separate lane from CC.
 - **Shared exit:** First staging **sent** fill on CC; treasury broker lamports **or** documented PDA blocker; Phygitals on-site buy scoped honestly (deep link + badge until tcomp passes).
 
@@ -254,3 +254,4 @@ Merged plan across **Worker 1 (data plane)** and **Worker 2 (settlement/product)
 | 2026-05-23 | Worker 2 — Read vs write + revenue; Synthesis (Worker 1 section pending append above) |
 | 2026-05-23 | Segment 3 — `/trade/all` merge + `alternateVenueAsks`; honest `canBuyOnChain` gates; Worker 2 ingest order fix |
 | 2026-05-23 | Segment 3/4 prep — dedupe Worker 2 Tensor table; M3 staging gate cross-ref; sync `isPrismaProxyJsonSeedMode` + full ingest chain with m3-recovery |
+| 2026-05-24 | Segment 4 prep — M5 compare honesty table (item strip partial live vs cert-unified index Soon); m3-recovery `alternateVenueAsks` drift fix |

@@ -57,7 +57,7 @@
 | 2 | Secondary desk context (collection slug / tabs) | `trade-desk-header.tsx` | product | **partial** ? icon + name + verified crown + VenueBadge on collection desk; Collections \| Portfolio tabs |
 | 3 | Hide marketing site chrome on `/trade/*` | `app/trade/layout.tsx` | product | **done** ? trade-only layout, no `SiteHeader` |
 | 4 | Footer ticker (Live ? Lite/Pro ? vol ? SOL ? TPS) | `trade-footer-ticker.tsx`, `trade-footer-ticker-server.tsx`, `lib/sol-price.ts`, `lib/trade/solana-tps.ts` | product | **done** ? Live ? lite/pro toggle (`trade-footer-view-prefs`) ? GRAILS ? listed ? floor (Pro) ? CoinGecko SOL/USD ? 24h vol (Pro, Tensor aggregate when keyed) ? TPS (Pro, RPC `getRecentPerformanceSamples`) |
-| 5 | ⌘K global search | `trade-command-palette.tsx`, `trade-app-header.tsx`, `trade-desk-header.tsx`, `lib/trade/parse-cert-prefix-query.ts` | product | **partial** — Cmd/Ctrl+K opens palette; collections filter + cert # prefix (4+ digits) → slab route; full mint resolver deferred M5 |
+| 5 | ⌘K global search | `trade-command-palette.tsx`, `trade-app-header.tsx`, `trade-desk-header.tsx`, `lib/trade/parse-cert-prefix-query.ts` | product | **partial** — Cmd/Ctrl+K opens palette; collections filter + cert # prefix (4+ digits) → slab route; **cert compare Soon** in header + ⌘K + `ItemCompareEmpty` (M5 honesty); full mint resolver deferred M5 |
 
 ### Homepage / collection index
 
@@ -132,7 +132,7 @@
 1. **Homepage collection table polish** ? rank/thumb in rows; ingest-backed 24h vol/? when Tensor unkeyed (columns shipped ? checklist #8 **done**)  
 2. ~~**CARDS \| TABLE toggle** on landing~~ ? **done** (M2 landing)  
 3. ~~**Filter accordion** with trait counts + URL sync (grader ? grade ? set)~~ ? **partial** (M2 pass 3: grader/grade/price/q URL sync; set/traits stub)  
-4. ~~**Collection tabs** ? BIDS live; ORDERS ? TRAITS ? HODLERS Soon~~ ? **partial** (M2 segment 3: tab strip live; Soon stubs labeled)  
+4. ~~**Collection tabs** ? BIDS live; ORDERS ? TRAITS ? HODLERS Soon~~ ? **partial** (M5: ORDERS + COLLECTION BID tab Soon labels; TRAITS/HODLERS live panels)  
 5. ~~**Grid toolbar** ? in-grid search, s/m/l density icons~~ ? **done** (M2: `trade-desk-toolbar.tsx`)  
 6. **Stats ribbon** ? sell now / volume(all) / sales / price ? from ingest or Tensor API  
 7. **Item page tabs** + commerce stack + collection footer stats — M2 partial (OFFERS connect shell; prev/next done; royalty inline open)  
@@ -176,3 +176,4 @@ See [crawl ?5](./tensor-tradesite-crawl-2026-05-21.md#5-portfolio-portfolio-logi
 | 2026-05-22 | M2 segment 3 (copy audit): #4 footer → **done** (Lite/Pro toggle, CoinGecko SOL, Tensor 24h vol, RPC TPS); #8 index table → **done** (full metric columns + sort); #15 tab notes refreshed (Soon stubs); parity **~67%** |
 | 2026-05-22 | UI lane iter 2: cap reached (24/24); inline CARDS BUY NOW/SELL NOW tint, featured ribbon casing, Recent Activity header; confirmed ui-bg-1..5 landed |
 | 2026-05-22 | Segment 3 exit worker: synced #5 (cert prefix in ⌘K), #22 (OFFERS connect shell); confirmed #4 TPS RPC + #16 toolbar **done** vs segment-3-exit-audit stale rows |
+| 2026-05-24 | M5 compare honesty: #5 refreshed (cert compare Soon in header/⌘K/ItemCompareEmpty); #15 ORDERS + COLLECTION BID tab Soon labels (TRAITS/HODLERS live) |

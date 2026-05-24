@@ -1,6 +1,6 @@
 # GRAILS step-by-step plan
 
-**Last updated:** 2026-05-22  
+**Last updated:** 2026-05-24  
 **North star:** GRAILS is **Tensor for RWA graded cards** — one desk to browse cross-venue liquidity, compare by cert, and settle wallet-native on Solana (then multichain).  
 **How to use this doc:** Work **one segment at a time**. Finish acceptance criteria before starting the next segment. Do not run parallel agents on `app/trade/*`, `components/trade/*`, or `lib/partner-listings.ts` **within the same segment session**.
 
@@ -47,7 +47,7 @@ Six lane orchestrators run in **separate Cursor invocations** — see [grails-or
 | 3 | Trade desk UX shell | M2 | L | partial |
 | 4 | On-chain Solana writes | M3 | L | partial |
 | 5 | Cross-venue depth & vault listings | M4 | M | not started |
-| 6 | Cert-unified compare index | M5 | M | not started |
+| 6 | Cert-unified compare index | M5 | M | partial (2026-05-24) |
 | 7 | Multichain partners | M6 | L | not started |
 | 8 | Portfolio & wallet flows | M3+ | M | partial |
 | 9 | Production hardening | Ops | M | partial |
@@ -176,7 +176,8 @@ Six lane orchestrators run in **separate Cursor invocations** — see [grails-or
 **Orchestrator crawl workflow (Segment 3 parity):** Use browser MCP on tensor.trade; compare regions to GRAILS files per [`.cursor/skills/tensor-tradesite-parity/SKILL.md`](../../.cursor/skills/tensor-tradesite-parity/SKILL.md). Spawn up to **10** background fix workers per run (one discrete gap each, one test file each); keep crawling while fixes run. Skip M5 cert compare and M6 multichain ingest spawns. Log gaps in [tensor-tradesite-crawl-2026-05-21.md](./tensor-tradesite-crawl-2026-05-21.md).
 
 **Status today:** partial — ~67% layout parity per copy checklist (2026-05-22 audit); BIDS tab live; ⌘K collections+cert prefix; OFFERS/ORDERS partial panels  
-**Orchestrator 2026-05-23:** segment lane inv1 workers landed (partner ↗ CTA, COMPARE/alternateVenueAsks strip, OFFERS Soon, landing merge stats); inv3 meta tick 3 — 5 bg doc workers (trade-architecture, staging checklist M3 prep, segment-3-exit-audit refresh, partner-aggregation sync, onchain-trade-stack aggregation); acceptance checkboxes unchanged pending human browser review.
+**Orchestrator 2026-05-23:** segment lane inv1 workers landed (partner ↗ CTA, COMPARE/alternateVenueAsks strip, OFFERS Soon, landing merge stats); inv3 meta tick 3 — 5 bg doc workers (trade-architecture, staging checklist M3 prep, segment-3-exit-audit refresh, partner-aggregation sync, onchain-trade-stack aggregation); acceptance checkboxes unchanged pending human browser review.  
+**Orchestrator 2026-05-24:** M5 compare honesty tick — 5 bg workers (collection tab Soon labels, ItemCompareEmpty M5 copy, m3-recovery + partner-aggregation sync, plan/m-milestone M5 partial status, trade-desk-p0 + copy checklist); M3 on-chain deferred to onchain lane.
 
 ---
 
@@ -302,7 +303,7 @@ Six lane orchestrators run in **separate Cursor invocations** — see [grails-or
 - Provide 2–3 known certs listed on multiple venues for QA
 - Approve FMV data source (manual table vs external API later)
 
-**Status today:** not started — cert-first route exists; no compare view or multi-venue resolver
+**Status today:** partial — item COMPARE tab + `ItemVenueCompareStrip` live when ≥2 venue asks from `alternateVenueAsks` merge (`lib/trade/venue-compare.ts` · `buildVenueCompareRows`); cert-first route `/trade/slab/[certOrMint]` exists. **Still Soon (M5):** unified cert index, `GET /api/trade/resolve?cert=`, ⌘K cert/mint resolver, `/trade/compare/[cert]` route, FMV band, provenance block — merge graph truth in [partner-aggregation-quickest-path.md](./partner-aggregation-quickest-path.md) · [m3-recovery-status-2026-05-22.md](./m3-recovery-status-2026-05-22.md) § Alignment update.
 
 ---
 

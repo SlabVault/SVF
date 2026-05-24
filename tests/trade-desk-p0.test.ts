@@ -173,6 +173,8 @@ test("M2 pro desk: left trade panel, collection tabs, stats ribbon props", () =>
   assert.match(desk, /label: "TRAITS"/);
   assert.match(desk, /label: "HODLERS"/);
   assert.match(desk, /label: "COLLECTION BID"/);
+  assert.match(desk, /\{ id: "collection_bid", label: "COLLECTION BID", soon: true \}/);
+  assert.match(desk, /tab\.soon \?/);
   assert.match(desk, /CollectionOrdersPanel/);
   assert.match(desk, /CollectionTraitsPanel/);
   assert.match(desk, /CollectionHoldersPanel/);
@@ -292,6 +294,14 @@ test("M2 VenueBadge on nft-card tiles", () => {
   assert.match(read("components/trade/venue-badge.tsx"), /collector_crypt: "CC"/);
   assert.match(read("components/trade/venue-badge.tsx"), /slabvault_treasury: "Treasury"/);
   assert.match(read("components/trade/venue-badge.tsx"), /magic_eden: "ME"/);
+});
+
+test("M2 grid tile: alternateVenueAsks compare chip links to COMPARE tab", () => {
+  const card = read("components/trade/tensor/nft-card.tsx");
+  assert.match(card, /listing\.alternateVenueAsks/);
+  assert.match(card, /tab=compare/);
+  assert.match(card, /#641ae6/);
+  assert.match(card, /trade_listing_compare_chip/);
 });
 
 test("P4 grid tile: partner deep link CTA when on-chain buy unavailable", () => {
@@ -453,7 +463,7 @@ test("P0 collection desk BIDS tab: hide trait bids filter", () => {
   );
 });
 
-test("P0 collection desk ORDERS tab: wallet-gated orders table shell", () => {
+test("P0 collection desk ORDERS tab: Soon label + wallet-gated orders table shell", () => {
   const desk = read("components/trade/trade-collection-desk-client.tsx");
   const ordersPanel = read("components/trade/collection-orders-panel.tsx");
 
@@ -461,14 +471,48 @@ test("P0 collection desk ORDERS tab: wallet-gated orders table shell", () => {
   assert.match(desk, /import \{ CollectionTraitsPanel \}/);
   assert.match(desk, /import \{ CollectionHoldersPanel \}/);
   assert.doesNotMatch(desk, /CollectionTabSoon/);
-  assert.match(desk, /\{ id: "orders", label: "ORDERS" \}/);
-  assert.doesNotMatch(desk, /\{ id: "orders", label: "ORDERS", soon: true \}/);
+  assert.match(desk, /\{ id: "orders", label: "ORDERS", soon: true \}/);
+  assert.match(desk, /tab\.soon \?/);
   assert.match(
     desk,
     /activeTab === "orders"[\s\S]*<CollectionOrdersPanel collectionSlug=\{collection\.slug\} \/>/,
   );
   assert.match(ordersPanel, /Connect wallet to view your orders/);
   assert.match(ordersPanel, /placeholder rows are shown/);
+});
+
+test("M5 collection desk tabs: honest Soon labels on indexed tabs", () => {
+  const desk = read("components/trade/trade-collection-desk-client.tsx");
+
+  assert.match(desk, /\{ id: "orders", label: "ORDERS", soon: true \}/);
+  assert.match(desk, /\{ id: "collection_bid", label: "COLLECTION BID", soon: true \}/);
+  assert.match(desk, /tab\.soon \?/);
+  assert.match(desk, /text-\[9px\][\s\S]*Soon/);
+  assert.doesNotMatch(desk, /\{ id: "traits", label: "TRAITS", soon: true \}/);
+  assert.doesNotMatch(desk, /\{ id: "holders", label: "HODLERS", soon: true \}/);
+});
+
+test("M5 compare: ItemCompareEmpty honest Soon copy and partial strip truth", () => {
+  const client = read("components/trade/trade-item-detail-client.tsx");
+  const landing = read("lib/trade-landing.ts");
+
+  assert.match(client, /function ItemCompareEmpty/);
+  assert.match(
+    client,
+    /Compare venues — item compare live at 2\+ asks; cert-unified index in M5 Soon/,
+  );
+  assert.match(client, /No alternate venue asks for this cert yet/);
+  assert.match(client, /Item compare is live when 2\+ asks exist/);
+  assert.match(client, /CC · Phygitals · treasury/);
+  assert.match(client, /Cert-unified compare index and mint search ships in/);
+  assert.match(client, /\(Soon\)/);
+  assert.doesNotMatch(client, /\{ id: "compare", label: "COMPARE", soon: true \}/);
+  assert.match(
+    client,
+    /venueCompareRows\.length >= 2[\s\S]*ItemVenueCompareStrip[\s\S]*ItemCompareEmpty/,
+  );
+  assert.match(landing, /step: "02"/);
+  assert.match(landing, /Cert-unified compare strip ships in M5 \(Soon\)/);
 });
 
 test("P0 collection desk HODLERS tab: wallet-gated holder distribution shell", () => {

@@ -96,19 +96,19 @@ Command: `npm run sync:discover` (2026-05-22)
 - [trade-staging-checklist.md](../trade-staging-checklist.md)
 - [tensor-repo-vendoring.md](./tensor-repo-vendoring.md)
 - [master-fix-backlog-2026-05-22.md](./master-fix-backlog-2026-05-22.md)
-- [partner-aggregation-quickest-path.md](./partner-aggregation-quickest-path.md)
+- [partner-aggregation-quickest-path.md](./partner-aggregation-quickest-path.md) — § M5 compare honesty (item strip vs cert-unified index)
 
 ---
 
 ## Alignment update — 2026-05-23
 
-Docs drift fix (segment 3, operator priority #6). Code is source of truth:
+Docs drift fix (segment 3, operator priority #6). Code is source of truth. **2026-05-24:** `alternateVenueAsks` item-strip row synced to `ItemVenueCompareStrip`; M5 compare honesty → [partner-aggregation-quickest-path.md § M5 compare honesty](./partner-aggregation-quickest-path.md#m5-compare-honesty--item-strip-vs-cert-unified-index).
 
 | Topic | Accurate as of 2026-05-23 |
 |-------|---------------------------|
 | **Ingest priority** | `aggregatePartnerExternalListings()` in `lib/partner-listings.ts`: DB → partner API → JSON → CC scrape fallback (stale/empty or `?live=1`) → Helius DAS → Tensor enrichment |
 | **`/trade/all` merge** | `lib/trade/all-listings.ts` — `AGGREGATE_COLLECTION_SLUGS`, parallel `loadCollectionListings`, `mergeAllTradeListings` + `dedupePartnerTradeListings`, nav stats via `buildAllListingsAggregateStats` |
-| **`alternateVenueAsks`** | Preserved in `mergeTradeListingFields` / `mergeAlternateVenueAsks` when same cert/mint lists on CC + Phygitals; item-page UI strip still pending |
+| **`alternateVenueAsks`** | Preserved in `mergeTradeListingFields` / `mergeAlternateVenueAsks` when same cert/mint lists on CC + Phygitals; **item-page strip live** — `ItemVenueCompareStrip` in `components/trade/trade-item-detail-client.tsx` when ≥2 venue asks (`buildVenueCompareRows` in `lib/trade/venue-compare.ts`); cert-unified index + ⌘K mint search still **M5 Soon** — see [partner-aggregation § M5 compare honesty](./partner-aggregation-quickest-path.md#m5-compare-honesty--item-strip-vs-cert-unified-index) |
 | **DB preflight** | `npm run db:preflight:warn` (`scripts/db-preflight.ts --warn-only`) before `sync:discover` when `DATABASE_URL` is set |
 | **Buy gates** | `canBuyOnChain`: `resolvesOnChainSettlement` (not `partner_site`) + client write flag + wallet + price + mint + seller **or** listState |
 | **Prisma proxy dev** | `isPrismaProxyJsonSeedMode()` skips DB probe/upsert in non-prod with `prisma+postgres://`; JSON seed serves with `dbStatus: unconfigured` |

@@ -134,6 +134,21 @@ export function assertTensorTradeWriteEnabled(): void {
   }
 }
 
+/** Machine-readable write gate — returns jsonError when TENSOR_TRADE_WRITE_ENABLED is off. */
+export function requireTensorTradeWriteEnabled(request: Request): Response | null {
+  if (isTensorTradeWriteEnabled()) return null;
+  return jsonError({
+    request,
+    status: 503,
+    code: "TRADE_WRITE_DISABLED",
+    message:
+      "Tensor trade write path is disabled. Set TENSOR_TRADE_WRITE_ENABLED=true on staging only.",
+    details: { tradeWriteEnabled: false },
+    recoveryHint:
+      "On-chain trades are staging-only until ops sign-off. Use partner deep links on production, or enable write flags on staging after RPC, Tensor key, and broker checklist.",
+  });
+}
+
 /** Optional origin gate — enable with TENSOR_TX_REQUIRE_TRUSTED_ORIGIN=true. */
 export function requireTrustedTensorTxOrigin(request: Request) {
   if (process.env.TENSOR_TX_REQUIRE_TRUSTED_ORIGIN !== "true") return null;

@@ -6,7 +6,13 @@ import {
   type Connection,
 } from "@solana/web3.js";
 
-import { isTradeTxWalletChallengeRequiredClient } from "@/lib/trade/trade-modal";
+import {
+  isTradeWriteDisabledBffPayload,
+  isTradeTxWalletChallengeRequiredClient,
+  resolveTradeTxBffErrorMessage,
+  TRADE_WRITE_DISABLED_BFF_CODE,
+  type TradeTxBffErrorPayload,
+} from "@/lib/trade/trade-modal";
 import { buildTradeTxChallengePayload } from "@/lib/wallet-trade-tx-challenge";
 
 export type RawTensorTx = {
@@ -14,10 +20,32 @@ export type RawTensorTx = {
   txV0?: string | { data: number[] };
 };
 
-export type TensorTxPayload = {
+export type TensorTxPayload = TradeTxBffErrorPayload & {
   txs?: RawTensorTx[];
-  error?: string;
 };
+
+export class TensorTxRouteError extends Error {
+  readonly code?: string;
+  readonly recoveryHint?: string;
+  readonly writeDisabled: boolean;
+
+  constructor(payload: TradeTxBffErrorPayload) {
+    super(resolveTradeTxBffErrorMessage(payload));
+    this.name = "TensorTxRouteError";
+    this.code = payload.code;
+    this.recoveryHint = payload.recoveryHint;
+    this.writeDisabled = isTradeWriteDisabledBffPayload(payload);
+  }
+}
+
+export function isTradeWriteDisabledRouteError(error: unknown): boolean {
+  if (error instanceof TensorTxRouteError) {
+    return error.writeDisabled;
+  }
+  return false;
+}
+
+export { TRADE_WRITE_DISABLED_BFF_CODE };
 
 function bytesFromTensorPayload(value: string | { data: number[] }): Uint8Array {
   if (typeof value === "string") {
@@ -84,7 +112,7 @@ export async function fetchTensorTxRoute(
   const response = await fetch(`${path}?${params.toString()}`);
   const data = (await response.json()) as TensorTxPayload;
   if (!response.ok) {
-    throw new Error(data.error ?? "Tensor transaction request failed.");
+    throw new TensorTxRouteError(data);
   }
   return data;
 }
